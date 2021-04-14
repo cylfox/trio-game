@@ -6,7 +6,7 @@ export interface Card {
     background: number;
 }
 
-export function getDeck() {
+export function getFullDeck() {
     let deck: Card[] = [];
     const variations = 3;
     let id = 0;

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Card, getDeck } from '../card';
+import { Card } from '../card';
+import { GameService } from '../game.service';
 
 @Component({
   selector: 'app-game-board',
@@ -7,12 +8,19 @@ import { Card, getDeck } from '../card';
   styleUrls: ['./game-board.component.css']
 })
 export class GameBoardComponent implements OnInit {
-  deck: Card[] = [];
-  
-  constructor() { }
+  cardsShown: Card[] = [];
+
+  constructor(private gameService: GameService) { }
 
   ngOnInit(): void {
-    this.deck = getDeck();
+    // this.gameService.
+    this.getCardsShown();
+  }
+
+  getCardsShown(): void {
+    // this.cardsShown = this.gameService.cardsShown;
+    this.gameService.getCardsShown().subscribe(cards => this.cardsShown = cards);
+    
   }
 
 }
