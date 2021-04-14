@@ -1,6 +1,6 @@
 export interface Card {
     id: number;
-    form: number;
+    shape: number;
     color: number;
     count: number;
     background: number;
@@ -17,7 +17,7 @@ export function getFullDeck() {
                 for (let h = 0; h < variations; h++) {
                     deck.push({
                         id: id++,
-                        form: i,
+                        shape: i,
                         color: j,
                         count: k,
                         background: h,

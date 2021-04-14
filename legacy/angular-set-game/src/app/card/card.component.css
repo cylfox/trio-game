@@ -1,3 +1,81 @@
-span{
-    margin-right: 0.2rem;
+.card {
+  background-color: aquamarine;
+  height: 5rem;
+  width: 3rem;
+  border: 1px solid black;
+  border-radius: 2px;
+}
+
+.padding {
+    padding: 10px;
+}
+
+.triangle {
+  width: 100px;
+  height: 50px;
+  transform: skew(20deg);
+}
+
+.square {
+  height: 50px;
+  width: 100px;
+  /* background-color: #555; */
+}
+
+.circle {
+  height: 50px;
+  width: 100px;
+  /* background-color: #555; */
+  border-radius: 50%;
+}
+
+.red {
+  background-color: red;
+}
+.blue {
+  background-color: blue;
+}
+.green {
+  background-color: green;
+}
+.white {
+  background-color: white;
+}
+
+.border-red {
+  border: 3px solid red;
+}
+.border-blue {
+  border: 3px solid blue;
+}
+.border-green {
+  border: 3px solid green;
+}
+
+.striped-red {
+  background: repeating-linear-gradient(
+    45deg,
+    red,
+    red 5px,
+    white 5px,
+    white 10px
+  );
+}
+.striped-blue {
+  background: repeating-linear-gradient(
+    45deg,
+    blue,
+    blue 5px,
+    white 5px,
+    white 10px
+  );
+}
+.striped-green {
+  background: repeating-linear-gradient(
+    45deg,
+    green,
+    green 5px,
+    white 5px,
+    white 10px
+  );
 }
