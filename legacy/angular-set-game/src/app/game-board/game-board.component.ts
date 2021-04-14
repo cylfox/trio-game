@@ -20,7 +20,6 @@ export class GameBoardComponent implements OnInit {
   getCardsShown(): void {
     // this.cardsShown = this.gameService.cardsShown;
     this.gameService.getCardsShown().subscribe(cards => this.cardsShown = cards);
-    
   }
 
 }
