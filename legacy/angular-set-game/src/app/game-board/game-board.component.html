@@ -1,9 +1,6 @@
 <h3>{{deck.length}} Cards</h3>
 <ul>
     <li class="card" *ngFor="let card of deck">
-        <span>Form: {{card.form}}</span>
-        <span>Color: {{card.color}}</span>
-        <span>Count: {{card.count}}</span>
-        <span>Background: {{card.background}}</span>
+        <app-card [card]="card"></app-card>
     </li>
 </ul>
