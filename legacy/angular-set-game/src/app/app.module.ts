@@ -5,13 +5,15 @@ import { AppComponent } from './app.component';
 import { GameBoardComponent } from './game-board/game-board.component';
 import { CardComponent } from './card/card.component';
 import { GameMenuComponent } from './game-menu/game-menu.component';
+import { GameCountdownComponent } from './game-countdown/game-countdown.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     GameBoardComponent,
     CardComponent,
-    GameMenuComponent
+    GameMenuComponent,
+    GameCountdownComponent
   ],
   imports: [
     BrowserModule
