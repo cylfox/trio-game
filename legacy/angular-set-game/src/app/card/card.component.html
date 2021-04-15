@@ -1,7 +1,7 @@
-<div class="card" *ngIf="card">
+<div class="card" *ngIf="card" [ngClass]="[selected ? 'card-selected' : '']">
   <span>Form: {{ card.shape }}</span>
   <span>Color: {{ card.color }}</span>
-  <br>
+  <br />
   <span>Count: {{ card.count }}</span>
   <span>Background: {{ card.background }}</span>
   <div

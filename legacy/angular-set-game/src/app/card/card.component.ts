@@ -8,6 +8,7 @@ import { Card } from '../card';
 })
 export class CardComponent implements OnInit {
   @Input() card?: Card;
+  @Input() selected?: boolean;
 
   constructor() {}
 
@@ -19,7 +20,7 @@ export class CardComponent implements OnInit {
 
   getCardStyle(card: Card) {
     let className = ['padding'];
-    
+
     if (card.shape === 0) {
       className.push('triangle');
     } else if (card.shape === 1) {

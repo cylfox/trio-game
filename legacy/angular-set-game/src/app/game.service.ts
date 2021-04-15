@@ -17,9 +17,9 @@ import { CountdownService } from './countdown.service';
 export class GameService {
   deck: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>([]);
   cardsShown: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>([]);
-  player1Cards: Card[] = [];
-  player2Cards: Card[] = [];
-  lostCards: Card[] = [];
+  player1Cards: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>([]);
+  player2Cards: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>([]);
+  lostCards: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>([]);
 
   counter$?: Observable<number>;
   // counter$?: Subscription;
@@ -77,5 +77,9 @@ export class GameService {
 
   checkSet(set: Card[]) {
     return true;
+  }
+
+  removeSetFromDeck(set: Card[], deck: Card[]) {
+    return deck.filter((card) => !set.map(c => c.id).includes(card.id));
   }
 }

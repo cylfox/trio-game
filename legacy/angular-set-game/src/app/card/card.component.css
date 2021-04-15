@@ -11,6 +11,11 @@
   background-color: darksalmon;
 }
 
+.card-selected{
+  border: 3px solid green;
+  background-color: greenyellow;
+}
+
 .padding {
   margin: 2px;
 }

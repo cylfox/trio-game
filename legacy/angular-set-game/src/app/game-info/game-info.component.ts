@@ -23,5 +23,8 @@ export class GameInfoComponent implements OnInit {
   setupInfo() {
     this.gameService.deck.subscribe((cards) => (this.deck = cards));
     this.gameService.cardsShown.subscribe((cards) => (this.cardsShown = cards));
+    this.gameService.player1Cards.subscribe((cards) => (this.player1Cards = cards));
+    this.gameService.player2Cards.subscribe((cards) => (this.player2Cards = cards));
+    this.gameService.lostCards.subscribe((cards) => (this.lostCards = cards));
   }
 }
