@@ -76,10 +76,34 @@ export class GameService {
   // }
 
   checkSet(set: Card[]) {
-    return true;
+    /*
+      SET: tres cartas forman un SET si, respecto a cada una de las
+      cuatro características (forma, color, número y fondo), evaluadas 
+      una a una, las tres cartas son iguales o las tres son diferentes.
+    */
+    if (set.length === 3) {
+      const shapes = this.uniqueOrEqual(set.map((card) => card.shape));
+      const color = this.uniqueOrEqual(set.map((card) => card.color));
+      const count = this.uniqueOrEqual(set.map((card) => card.count));
+      const background = this.uniqueOrEqual(set.map((card) => card.background));
+
+      console.log(shapes, color, count, background);
+      console.log(shapes && color && count && background);
+      
+      return shapes && color && count && background;
+    } else {
+      return false;
+    }
+  }
+
+  private uniqueOrEqual(array: any) {
+    console.log("as", array);
+    
+    const set = new Set(array);
+    return set.size === 1 || set.size === array.length ? true : false;
   }
 
   removeSetFromDeck(set: Card[], deck: Card[]) {
-    return deck.filter((card) => !set.map(c => c.id).includes(card.id));
+    return deck.filter((card) => !set.map((c) => c.id).includes(card.id));
   }
 }

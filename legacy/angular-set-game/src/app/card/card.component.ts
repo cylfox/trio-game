@@ -32,7 +32,7 @@ export class CardComponent implements OnInit {
     if (card.background === 2) {
       if (card.color === 0) {
         className.push('striped-red border-red');
-      } else if (card.shape === 1) {
+      } else if (card.color === 1) {
         className.push('striped-blue border-blue');
       } else {
         className.push('striped-green border-green');
@@ -40,7 +40,7 @@ export class CardComponent implements OnInit {
     } else if (card.background === 1) {
       if (card.color === 0) {
         className.push('border-red white');
-      } else if (card.shape === 1) {
+      } else if (card.color === 1) {
         className.push('border-blue white');
       } else {
         className.push('border-green white');
@@ -48,7 +48,7 @@ export class CardComponent implements OnInit {
     } else {
       if (card.color === 0) {
         className.push('red');
-      } else if (card.shape === 1) {
+      } else if (card.color === 1) {
         className.push('blue');
       } else {
         className.push('green');

@@ -39,8 +39,8 @@ export class GameBoardComponent implements OnInit {
     this.selectedCards.push(card);
     console.log(card, this.selectedCards.length);
 
-    if (this.selectedCards.length === 3) {
-      console.log('length === 3');
+    if (new Set(this.selectedCards).size === 3) {
+      console.log('length === 3', this.selectedCards);
 
       if (this.gameService.checkSet(this.selectedCards)) {
         console.log('is a set');
@@ -65,21 +65,29 @@ export class GameBoardComponent implements OnInit {
         const newCards = deck.splice(0, 3);
 
         this.gameService.deck.next(deck);
-        const cardsShown2= await this.gameService.cardsShown
+        const cardsShown2 = await this.gameService.cardsShown
           .pipe(take(1))
           .toPromise();
-        this.gameService.cardsShown.next(
-          cardsShown2.concat(newCards)
-        );
+        this.gameService.cardsShown.next(cardsShown2.concat(newCards));
       } else {
         console.log('is not a set');
         // removes a set from the player deck
         let player1Cards = await this.gameService.player1Cards
           .pipe(take(1))
           .toPromise();
-        player1Cards.splice(0, 3);
+        const lostCards = player1Cards.splice(0, 3);
         this.gameService.player1Cards.next(player1Cards);
+
+        // add the set to the lost cards
+        const allLostCards = await this.gameService.lostCards
+          .pipe(take(1))
+          .toPromise();
+        this.gameService.lostCards.next(allLostCards.concat(lostCards));
       }
+      // empty the selection
+      this.selectedCards = [];
+    } else {
+      console.log('must be three different cards');
       // empty the selection
       this.selectedCards = [];
     }
