@@ -1,11 +1,13 @@
 <div class="card" *ngIf="card" [ngClass]="[selected ? 'card-selected' : '']">
-  <span>Form: {{ card.shape }}</span>
-  <span>Color: {{ card.color }}</span>
+  <!-- <span>Se: {{ card.shape }}</span>
+  <span>Cr: {{ card.color }}</span>
   <br />
-  <span>Count: {{ card.count }}</span>
-  <span>Background: {{ card.background }}</span>
-  <div
-    [ngClass]="getCardStyle(card)"
-    *ngFor="let i of fillArray(card.count + 1)"
-  ></div>
+  <span>Ct: {{ card.count }}</span>
+  <span>Bd: {{ card.background }}</span> -->
+  <div class="shape">
+    <div
+      [ngClass]="getCardStyle(card)"
+      *ngFor="let i of fillArray(card.count + 1)"
+    ></div>
+  </div>
 </div>

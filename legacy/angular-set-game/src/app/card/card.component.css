@@ -1,9 +1,15 @@
 .card {
   background-color: aquamarine;
-  width: fit-content;
+  width: 150px;
+  height: 230px;
   border: 3px solid black;
   border-radius: 2px;
-  margin: 5px;
+  /* text-align: -webkit-center; */
+  padding: 5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card:hover{
@@ -17,7 +23,7 @@
 }
 
 .padding {
-  margin: 2px;
+  margin: 10px;
 }
 
 .triangle {
