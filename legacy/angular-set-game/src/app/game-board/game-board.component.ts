@@ -55,20 +55,20 @@ export class GameBoardComponent implements OnInit {
         const player1Cards = await this.gameService.player1Cards
           .pipe(take(1))
           .toPromise();
-
         const newPlayer1Cards = player1Cards.concat(this.selectedCards);
         this.gameService.player1Cards.next(newPlayer1Cards);
 
         // add new cards from the deck to the table
+        if (cardsShown.length - 3 < 12) {
+          let deck = await this.gameService.deck.pipe(take(1)).toPromise();
+          const newCards = deck.splice(0, 3);
 
-        let deck = await this.gameService.deck.pipe(take(1)).toPromise();
-        const newCards = deck.splice(0, 3);
-
-        this.gameService.deck.next(deck);
-        const cardsShown2 = await this.gameService.cardsShown
-          .pipe(take(1))
-          .toPromise();
-        this.gameService.cardsShown.next(cardsShown2.concat(newCards));
+          this.gameService.deck.next(deck);
+          const cardsShown2 = await this.gameService.cardsShown
+            .pipe(take(1))
+            .toPromise();
+          this.gameService.cardsShown.next(cardsShown2.concat(newCards));
+        }
       } else {
         console.log('is not a set');
         // removes a set from the player deck
