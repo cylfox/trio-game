@@ -44,24 +44,13 @@ export class GameBoardComponent implements OnInit {
 
       if (this.gameService.checkSet(this.selectedCards)) {
         console.log('is a set');
-        // const deck = await this.gameService.deck.pipe(take(1)).toPromise();
-        // const newDeck = this.gameService.removeSetFromDeck(
-        //   this.selectedCards,
-        //   deck
-        // );
-        const cardsShown = await this.gameService.cardsShown.pipe(take(1)).toPromise();
-        const newDeck = this.gameService.removeSetFromDeck(
-          this.selectedCards,
-          cardsShown
+        // remove selected cards from table
+        const cardsShown = await this.gameService.cardsShown
+          .pipe(take(1))
+          .toPromise();
+        this.gameService.cardsShown.next(
+          this.gameService.removeSetFromDeck(this.selectedCards, cardsShown)
         );
-        console.log(
-          'this.selectedCards',
-          this.selectedCards,
-          'newdeck',
-          newDeck
-        );
-
-        this.gameService.cardsShown.next(newDeck);
         // adds the cards to the player deck
         const player1Cards = await this.gameService.player1Cards
           .pipe(take(1))
@@ -69,6 +58,19 @@ export class GameBoardComponent implements OnInit {
 
         const newPlayer1Cards = player1Cards.concat(this.selectedCards);
         this.gameService.player1Cards.next(newPlayer1Cards);
+
+        // add new cards from the deck to the table
+
+        let deck = await this.gameService.deck.pipe(take(1)).toPromise();
+        const newCards = deck.splice(0, 3);
+
+        this.gameService.deck.next(deck);
+        const cardsShown2= await this.gameService.cardsShown
+          .pipe(take(1))
+          .toPromise();
+        this.gameService.cardsShown.next(
+          cardsShown2.concat(newCards)
+        );
       } else {
         console.log('is not a set');
         // removes a set from the player deck
