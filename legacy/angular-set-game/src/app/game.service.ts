@@ -43,6 +43,14 @@ export class GameService {
     // this.setupCountdown();
   }
 
+  async addRowOfCards() {
+    let deck = await this.deck.pipe(take(1)).toPromise();
+    let cardsShown = await this.cardsShown.pipe(take(1)).toPromise();
+
+    this.cardsShown.next(cardsShown.concat(deck.splice(0, 3)));
+    this.deck.next(deck);
+  }
+
   shuffleArray(array: any) {
     // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
     // The new ES6 allows us to assign two variables at once. This is especially
@@ -89,7 +97,7 @@ export class GameService {
 
       console.log(shapes, color, count, background);
       console.log(shapes && color && count && background);
-      
+
       return shapes && color && count && background;
     } else {
       return false;
@@ -97,8 +105,8 @@ export class GameService {
   }
 
   private uniqueOrEqual(array: any) {
-    console.log("as", array);
-    
+    console.log('as', array);
+
     const set = new Set(array);
     return set.size === 1 || set.size === array.length ? true : false;
   }

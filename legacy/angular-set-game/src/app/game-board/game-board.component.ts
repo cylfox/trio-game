@@ -87,9 +87,11 @@ export class GameBoardComponent implements OnInit {
       // empty the selection
       this.selectedCards = [];
     } else {
-      console.log('must be three different cards');
-      // empty the selection
-      this.selectedCards = [];
+      if (this.selectedCards.length === 3) {
+        console.log('must be three different cards');
+        // empty the selection
+        this.selectedCards = [];
+      }
     }
   }
 }

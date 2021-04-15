@@ -10,6 +10,7 @@ import { GameService } from '../game.service';
 })
 export class GameMenuComponent implements OnInit {
   selectedCards: Card[] = [];
+  gameHasStarted: boolean = false;
 
   constructor(
     private gameService: GameService,
@@ -22,7 +23,12 @@ export class GameMenuComponent implements OnInit {
 
   startGame(): void {
     this.gameService.newGame();
-    this.countdownService.start();
+    // this.countdownService.start();
+    this.gameHasStarted = true;
+  }
+
+  addRowOfCards(): void {
+    this.gameService.addRowOfCards();
   }
 
   setFound(): void {

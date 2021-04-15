@@ -1,4 +1,5 @@
 <h3>Game Menu</h3>
-<button (click)="startGame()">Start</button>
-<button (click)="setFound()">SET!</button>
-<app-game-countdown ></app-game-countdown>
+<button (click)="startGame()">New game</button>
+<!-- <button (click)="setFound()">SET!</button> -->
+<button (click)="addRowOfCards()" *ngIf="gameHasStarted">Add another row</button>
+<!-- <app-game-countdown ></app-game-countdown> -->
