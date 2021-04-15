@@ -65,7 +65,6 @@ export class GameService {
     //   map(() => --this.count),
     //   tap(() => console.log('estoy ejecutandome'))
     // );
-
     // this.countdownService.start();
     // this.counter$ = this.countdownService.counter$?.subscribe(
     //   (c) => (this.count = c)
@@ -75,4 +74,8 @@ export class GameService {
   // stopCountdown() {
   //   this.counter$?.unsubscribe();
   // }
+
+  checkSet(set: Card[]) {
+    return true;
+  }
 }

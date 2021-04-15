@@ -7,7 +7,7 @@ import { map, repeatWhen, switchMap, take, takeUntil } from 'rxjs/operators';
 })
 export class CountdownService {
   // counter$?: Observable<number>;
-  count = 10;
+  count = 60;
 
   // constructor() { }
 
@@ -26,7 +26,7 @@ export class CountdownService {
   constructor() {
     this.observable$ = timer(0, 1000).pipe(
       map(() => --this.count),
-      // take(this.count),
+      take(this.count),
       takeUntil(this._stop),
       repeatWhen(() => this._start)
     );

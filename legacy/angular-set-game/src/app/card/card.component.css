@@ -1,9 +1,14 @@
 .card {
   background-color: aquamarine;
   width: fit-content;
-  border: 1px solid black;
+  border: 3px solid black;
   border-radius: 2px;
   margin: 5px;
+}
+
+.card:hover{
+  border: 3px solid red;
+  background-color: darksalmon;
 }
 
 .padding {
