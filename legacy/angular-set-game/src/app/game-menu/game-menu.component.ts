@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Card } from '../card';
+import { CountdownService } from '../countdown.service';
 import { GameService } from '../game.service';
 
 @Component({
@@ -10,16 +11,23 @@ import { GameService } from '../game.service';
 export class GameMenuComponent implements OnInit {
   selectedCards: Card[] = [];
 
-  constructor(private gameService: GameService) {}
+  constructor(
+    private gameService: GameService,
+    private countdownService: CountdownService
+  ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.countdownService.stop();
+  }
 
   startGame(): void {
     this.gameService.newGame();
+    this.countdownService.start();
   }
 
   setFound(): void {
     // this.gameService.pauseGame();
+    this.countdownService.stop();
   }
 
   selectCard(card: Card): void {
