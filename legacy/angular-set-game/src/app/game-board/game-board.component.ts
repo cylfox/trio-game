@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { take } from 'rxjs/operators';
-import { Card } from '../card';
+import { BoardCard, Card } from '../card';
 import { GameService } from '../game.service';
 
 @Component({
@@ -9,12 +9,12 @@ import { GameService } from '../game.service';
   styleUrls: ['./game-board.component.css'],
 })
 export class GameBoardComponent implements OnInit {
-  cardsShown: Card[] = [];
+  cardsShown: BoardCard[] = [];
   selectedCards: Card[] = [];
   player1Cards: Card[] = [];
   lostCards: Card[] = [];
 
-  constructor(private gameService: GameService) {}
+  constructor(private gameService: GameService) { }
 
   ngOnInit(): void {
     // this.gameService.
@@ -25,7 +25,9 @@ export class GameBoardComponent implements OnInit {
     // this.cardsShown = this.gameService.cardsShown;
     this.gameService
       .getCardsShown()
-      .subscribe((cards) => (this.cardsShown = cards));
+      .subscribe((cards) => {
+        this.cardsShown = cards.map(card => ({ ...card, selected: false }));
+      });
   }
 
   // getPlayer1Cards(): void {
@@ -35,7 +37,8 @@ export class GameBoardComponent implements OnInit {
   //   );
   // }
 
-  async selectCard(card: Card) {
+  async selectCard(card: BoardCard) {
+    card.selected = true;
     this.selectedCards.push(card);
     console.log(card, this.selectedCards.length);
 
@@ -85,13 +88,18 @@ export class GameBoardComponent implements OnInit {
         this.gameService.lostCards.next(allLostCards.concat(lostCards));
       }
       // empty the selection
-      this.selectedCards = [];
+      this.clearSelectedCards();
     } else {
       if (this.selectedCards.length === 3) {
         console.log('must be three different cards');
         // empty the selection
-        this.selectedCards = [];
+        this.clearSelectedCards();
       }
     }
+  }
+
+  clearSelectedCards() {
+    this.selectedCards = [];
+    this.cardsShown.forEach(card => card.selected = false);
   }
 }

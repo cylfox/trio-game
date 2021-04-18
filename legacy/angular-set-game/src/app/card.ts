@@ -1,9 +1,13 @@
 export interface Card {
-    id: number;
-    shape: number;
-    color: number;
-    count: number;
-    background: number;
+  id: number;
+  shape: number;
+  color: number;
+  count: number;
+  background: number;
+}
+
+export interface BoardCard extends Card{
+  selected: boolean;
 }
 
 export function getFullDeck() {
