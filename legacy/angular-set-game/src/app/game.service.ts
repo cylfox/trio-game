@@ -8,7 +8,7 @@ import {
   timer,
 } from 'rxjs';
 import { catchError, map, take, tap } from 'rxjs/operators';
-import { Card, getFullDeck } from './card';
+import { BoardCard, Card, getFullDeck } from './card';
 import { CountdownService } from './countdown.service';
 
 @Injectable({
@@ -35,12 +35,15 @@ export class GameService {
 
     this.shuffleArray(deck);
     // console.log('deck shuffled', deck);
+    const cardsShown = deck.splice(0, 12);
 
-    this.cardsShown.next(deck.splice(0, 12));
+    this.cardsShown.next(cardsShown);
     this.deck.next(deck);
     // console.log('shown', this.cardsShown);
 
     // this.setupCountdown();
+    console.log("SET", this.findSet(cardsShown));
+
   }
 
   async addRowOfCards() {
@@ -86,7 +89,7 @@ export class GameService {
   checkSet(set: Card[]) {
     /*
       SET: tres cartas forman un SET si, respecto a cada una de las
-      cuatro características (forma, color, número y fondo), evaluadas 
+      cuatro características (forma, color, número y fondo), evaluadas
       una a una, las tres cartas son iguales o las tres son diferentes.
     */
     if (set.length === 3) {
@@ -113,5 +116,23 @@ export class GameService {
 
   removeSetFromDeck(set: Card[], deck: Card[]) {
     return deck.filter((card) => !set.map((c) => c.id).includes(card.id));
+  }
+
+  findSet(cardsShown: Card[]) {
+    for (let i = 0; i < cardsShown.length; i++) {
+      for (let j = 0; j < cardsShown.length; j++) {
+        for (let k = 0; k < cardsShown.length; k++) {
+          if (i !== j && i !== k && j !== k) {
+            let set: Card[] = [];
+            set.push(cardsShown[i]);
+            set.push(cardsShown[j]);
+            set.push(cardsShown[k]);
+
+            if (this.checkSet(set)) return set;
+          }
+        }
+      }
+    }
+    return [];
   }
 }

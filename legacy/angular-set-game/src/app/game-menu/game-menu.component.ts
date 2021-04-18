@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { take } from 'rxjs/operators';
 import { Card } from '../card';
 import { CountdownService } from '../countdown.service';
 import { GameService } from '../game.service';
@@ -15,7 +16,7 @@ export class GameMenuComponent implements OnInit {
   constructor(
     private gameService: GameService,
     private countdownService: CountdownService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.countdownService.stop();
@@ -38,5 +39,10 @@ export class GameMenuComponent implements OnInit {
 
   selectCard(card: Card): void {
     this.selectedCards.push(card);
+  }
+
+  async findSet() {
+    let cardsShown = await this.gameService.cardsShown.pipe(take(1)).toPromise();
+    console.log(this.gameService.findSet(cardsShown))
   }
 }
