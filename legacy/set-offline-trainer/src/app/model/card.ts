@@ -5,7 +5,7 @@ export interface Card {
   shape: number;
   color: number;
   count: number;
-  background: number;
+  shading: number;
   hidden: boolean;
   selected: boolean;
 }
@@ -28,8 +28,8 @@ export function getGameDeck() {
             shape: i,
             color: j,
             count: k,
-            background: h,
-            hidden: true,
+            shading: h,
+            hidden: false,
             selected: false,
           } as Card);
         }

@@ -1,10 +1,38 @@
 <div class="card" [class.hidden]="card.hidden">
   <div class="card-inner">
     <div class="front">
-      {{ card.id }}
+      <!-- number (one, two, or three),
+      shape (diamond, squiggle, oval),
+      shading (solid, striped, or open),
+      and color (red, green, or purple) -->
+      <div
+        class="number"
+        *ngFor="let shape of occurrences"
+        [ngClass]="[
+          card.color === 0 ? 'red' : '',
+          card.color === 1 ? 'green' : '',
+          card.color === 2 ? 'purple' : ''
+        ]"
+      >
+        <img
+          *ngIf="card.shape === 1 && card.shading === 0"
+          src="/assets/squiggle_solid.svg"
+          alt="Squiggle solid"
+        />
+        <img
+          *ngIf="card.shape === 1 && card.shading === 1"
+          src="/assets/squiggle_striped.svg"
+          alt="Squiggle stripped"
+        />
+        <img
+          *ngIf="card.shape === 1 && card.shading === 2"
+          src="/assets/squiggle_open.svg"
+          alt="Squiggle open"
+        />
+      </div>
     </div>
     <div class="back">
-      <img src="/assets/set_logo.png" alt="SET">
+      <img src="/assets/set_logo.png" alt="SET Logo" />
     </div>
   </div>
 </div>

@@ -13,14 +13,18 @@ export class CardComponent implements OnInit {
     shape: 0,
     color: 0,
     count: 0,
-    background: 0,
+    shading: 0,
     hidden: false,
     selected: false,
   };
+
+  occurrences: number[] = [];
   // @Input() hidden: boolean = false;
 
   constructor() {
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.occurrences = Array(this.card.count + 1) as number[];
+  }
 }
