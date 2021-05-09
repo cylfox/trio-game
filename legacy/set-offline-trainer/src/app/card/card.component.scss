@@ -16,6 +16,12 @@
   transform: rotateY(180deg);
 }
 
+.selected {
+  border: 5px orange solid;
+  border-collapse: separate;
+  border-spacing: 30px;
+}
+
 .front,
 .back {
   // background-color: slateblue;
