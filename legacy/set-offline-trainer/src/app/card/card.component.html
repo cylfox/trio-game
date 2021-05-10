@@ -15,6 +15,21 @@
         ]"
       >
         <img
+          *ngIf="card.shape === 0 && card.shading === 0"
+          src="/assets/diamond_solid.svg"
+          alt="diamond solid"
+        />
+        <img
+          *ngIf="card.shape === 0 && card.shading === 1"
+          src="/assets/diamond_striped.svg"
+          alt="diamond stripped"
+        />
+        <img
+          *ngIf="card.shape === 0 && card.shading === 2"
+          src="/assets/diamond_open.svg"
+          alt="diamond open"
+        />
+        <img
           *ngIf="card.shape === 1 && card.shading === 0"
           src="/assets/squiggle_solid.svg"
           alt="Squiggle solid"
@@ -28,6 +43,21 @@
           *ngIf="card.shape === 1 && card.shading === 2"
           src="/assets/squiggle_open.svg"
           alt="Squiggle open"
+        />
+        <img
+          *ngIf="card.shape === 2 && card.shading === 0"
+          src="/assets/oval_solid.svg"
+          alt="oval solid"
+        />
+        <img
+          *ngIf="card.shape === 2 && card.shading === 1"
+          src="/assets/oval_striped.svg"
+          alt="oval stripped"
+        />
+        <img
+          *ngIf="card.shape === 2 && card.shading === 2"
+          src="/assets/oval_open.svg"
+          alt="oval open"
         />
       </div>
     </div>
