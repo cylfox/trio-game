@@ -1,6 +1,43 @@
+.wrapper {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+header {
+
+}
+
+.menu {
+  display: flex;
+  justify-content: left;
+  // padding: 10px;
+  width: 100%;
+  border: 2px black solid;
+  background-color: slateblue;
+}
+
+.game {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: space-around;
+}
+
 .board {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-gap: 10px;
   grid-auto-rows: minmax(100px, auto);
+}
+
+.sideboard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+}
+
+.deck-card {
+  position: absolute;
 }

@@ -20,15 +20,29 @@ import { animate, style, transition, trigger } from '@angular/animations';
 export class AppComponent {
   title = 'set-offline-trainer';
 
-  deck: Card[] = getGameDeck();
+  cardDeck: Card[] = getGameDeck();
+  cardsDisplayed: Card[] = [];
+  cardsWon: Card[] = [];
+  cardsLost: Card[] = [];
+
   visibleModal: boolean = false;
+
+  newGame() {
+    this.cardDeck = getGameDeck();
+    this.cardsDisplayed = this.cardDeck.splice(0, 12);
+    this.cardsWon = this.cardDeck.splice(0, 24);;
+    this.cardsLost = this.cardDeck.splice(0, 6);;
+
+    console.log(this.cardDeck, this.cardsDisplayed);
+
+  }
 
   toogleVisibility(card: any) {
     card.hidden = !card.hidden;
   }
 
   toggleHide() {
-    this.deck.forEach(card => card.hidden = !card.hidden);
+    this.cardDeck.forEach(card => card.hidden = !card.hidden);
   }
 
   toggleModal() {
