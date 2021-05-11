@@ -1,8 +1,9 @@
 <button (click)="toggleModal()">Toggle Modal</button>
+<button (click)="toggleHide()">Toggle Hide</button>
 
 <app-modal *ngIf="visibleModal" (onClose)="toggleModal()" [@fadeInOut]></app-modal>
 
-<div>
+<div class="board">
   <app-card
     *ngFor="let card of deck"
     [card]="card"

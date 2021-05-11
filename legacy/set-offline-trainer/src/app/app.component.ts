@@ -27,6 +27,10 @@ export class AppComponent {
     card.hidden = !card.hidden;
   }
 
+  toggleHide() {
+    this.deck.forEach(card => card.hidden = !card.hidden);
+  }
+
   toggleModal() {
     this.visibleModal = !this.visibleModal;
   }
