@@ -1,11 +1,12 @@
 <div class="wrapper">
-  <header></header>
+  <header>Header</header>
   <nav>
     <button (click)="toggleModal()">Toggle Modal</button>
     <button (click)="toggleHide()">Toggle Hide</button>
     <button (click)="newGame()">New Game</button>
   </nav>
   <main>
+    Main
     <div class="game">
       <div class="sideboard">
         <div>
@@ -42,7 +43,7 @@
           </div>
         </div>
       </div>
-      <div>
+      <div class="displayed">
         <h3>Displayed: {{ cardsDisplayed.length }}</h3>
         <div class="board">
           <app-card
@@ -53,8 +54,9 @@
         </div>
       </div>
     </div>
+    <aside>Aside</aside>
   </main>
-  <footer></footer>
+  <footer>Footer</footer>
   <!-- Modales -->
   <app-modal *ngIf="visibleModal" (onClose)="toggleModal()" [@fadeInOut]>
     <p>This is a modal pararagraph.</p>

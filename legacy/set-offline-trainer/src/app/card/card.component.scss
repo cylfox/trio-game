@@ -1,7 +1,8 @@
 .card {
-  width: 100px;
-  height: 150px;
-  margin: 5px;
+  width: 50%;
+  height: calc(120% - 50%);
+  // padding-top: 50%;
+  // margin: 0.2em;
   perspective: 1000px;
   transition: 0.5s;
 }

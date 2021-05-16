@@ -31,9 +31,19 @@ export class AppComponent {
 
   newGame() {
     this.cardDeck = getGameDeck();
+
+    // hide displayed cards
+
     this.cardsDisplayed = this.cardDeck.splice(0, 12);
+
+    // remove transition from card element first ?
+    // translate each card to the deck position
+    // show displayed cards
+    // translate back where they were
+
     this.cardsWon = this.cardDeck.splice(0, 24);
     this.cardsLost = this.cardDeck.splice(0, 6);
+
 
     console.log(this.cardDeck, this.cardsDisplayed);
   }
