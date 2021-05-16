@@ -1,0 +1,90 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+header {
+  background-color: red;
+  border: 2px black solid;
+  height: 50px;
+}
+
+nav {
+  background-color: orange;
+  border: 2px black solid;
+  height: 40px;
+}
+
+main {
+  background-color: teal;
+  border: 2px black solid;
+  height: 100%;
+
+  display: flex;
+  // flex-wrap: wrap;
+
+  // width: 80%;
+}
+
+footer {
+  background-color: green;
+  border: 2px black solid;
+  height: 50px;
+}
+
+aside {
+  background-color: salmon;
+  border: 2px black solid;
+  height: 100%;
+  width: 20%;
+
+}
+
+// .menu {
+//   display: flex;
+//   justify-content: left;
+//   // padding: 10px;
+//   width: 100%;
+//   border: 2px black solid;
+//   background-color: slateblue;
+// }
+
+.game {
+  height: 100%;
+  margin: 0;
+  width: 80%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 10px;
+  grid-auto-rows: minmax(100px, auto);
+}
+
+.sideboard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+  width: 20%;
+}
+
+.displayed {
+  height: 100%;
+  width: 80%;
+}
+
+.deck-card {
+  position: absolute;
+}
+
+.deck,
+.won,
+.lost {
+  height: 150px;
+}
