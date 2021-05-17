@@ -6,7 +6,6 @@
     <button (click)="newGame()">New Game</button>
   </nav>
   <main>
-    Main
     <div class="game">
       <div class="sideboard">
         <div>
@@ -44,7 +43,7 @@
         </div>
       </div>
       <div class="displayed">
-        <h3>Displayed: {{ cardsDisplayed.length }}</h3>
+        <!-- <h3>Displayed: {{ cardsDisplayed.length }}</h3> -->
         <div class="board">
           <app-card
             *ngFor="let card of cardsDisplayed"
