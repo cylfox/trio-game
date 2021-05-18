@@ -31,7 +31,7 @@ main {
 footer {
   background-color: green;
   border: 2px black solid;
-  height: 50px;
+  height: 30px;
 }
 
 aside {
@@ -39,7 +39,7 @@ aside {
   border: 2px black solid;
   height: 100%;
   width: 300px;
-
+  margin-left: auto;
 }
 
 // .menu {
@@ -59,14 +59,18 @@ aside {
   justify-content: space-around;
 }
 
-.board {
+.card-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-gap: 2%;
   // grid-auto-rows: minmax(100px, auto);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-53%);
+  width: 100%;
 }
 
-.board > * {
+.card-grid > * {
   // max-width: 100px;
 }
 
@@ -82,7 +86,8 @@ aside {
   height: 100%;
   width: 80%;
   max-width: 75vh;
-  margin: .5rem;
+  margin: 0.5rem;
+  position: relative;
 }
 
 .deck-card {

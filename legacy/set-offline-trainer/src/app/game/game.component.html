@@ -6,56 +6,56 @@
     <button (click)="newGame()">New Game</button>
   </nav>
   <main>
-    <div class="game">
-      <div class="sideboard">
-        <div>
-          <h3>Deck: {{ cardDeck.length }}</h3>
-          <div class="deck">
-            <app-card
-              class="deck-card"
-              *ngFor="let card of cardDeck"
-              [card]="card"
-              (click)="showPosition($event)"
-            ></app-card>
-          </div>
-        </div>
-        <div>
-          <h3>Won: {{ cardsWon.length }}</h3>
-          <div class="won">
-            <app-card
-              class="deck-card"
-              *ngFor="let card of cardsWon"
-              [card]="card"
-              (click)="toogleVisibility(card)"
-            ></app-card>
-          </div>
-        </div>
-        <div>
-          <h3>Lost: {{ cardsLost.length }}</h3>
-          <div class="lost">
-            <app-card
-              class="deck-card"
-              *ngFor="let card of cardsLost"
-              [card]="card"
-              (click)="toogleVisibility(card)"
-            ></app-card>
-          </div>
-        </div>
-      </div>
-      <div class="displayed">
-        <!-- <h3>Displayed: {{ cardsDisplayed.length }}</h3> -->
-        <div class="board">
+    <div class="sideboard">
+      <div>
+        <h3>Deck: {{ cardDeck.length }}</h3>
+        <div class="deck">
           <app-card
-            *ngFor="let card of cardsDisplayed"
+            class="deck-card"
+            *ngFor="let card of cardDeck"
             [card]="card"
             (click)="showPosition($event)"
           ></app-card>
         </div>
       </div>
+      <div>
+        <h3>Won: {{ cardsWon.length }}</h3>
+        <div class="won">
+          <app-card
+            class="deck-card"
+            *ngFor="let card of cardsWon"
+            [card]="card"
+            (click)="toogleVisibility(card)"
+          ></app-card>
+        </div>
+      </div>
+      <div>
+        <h3>Lost: {{ cardsLost.length }}</h3>
+        <div class="lost">
+          <app-card
+            class="deck-card"
+            *ngFor="let card of cardsLost"
+            [card]="card"
+            (click)="toogleVisibility(card)"
+          ></app-card>
+        </div>
+      </div>
     </div>
+    <!-- <div class="game"> -->
+    <div class="displayed">
+      <!-- <h3>Displayed: {{ cardsDisplayed.length }}</h3> -->
+      <div class="card-grid">
+        <app-card
+          *ngFor="let card of cardsDisplayed"
+          [card]="card"
+          (click)="showPosition($event)"
+        ></app-card>
+      </div>
+    </div>
+    <!-- </div> -->
     <aside>Aside</aside>
   </main>
-  <footer>Footer</footer>
+  <footer></footer>
   <!-- Modales -->
   <app-modal *ngIf="visibleModal" (onClose)="toggleModal()" [@fadeInOut]>
     <p>This is a modal pararagraph.</p>
