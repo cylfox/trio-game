@@ -29,7 +29,7 @@ export function getGameDeck() {
             color: j,
             count: k,
             shading: h,
-            hidden: false,
+            hidden: true,
             selected: false,
           } as Card);
         }

@@ -21,11 +21,9 @@ import { animate, style, transition, trigger } from '@angular/animations';
   ],
 })
 export class GameComponent implements OnInit {
-
   constructor() { }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void { }
 
   cardDeck: Card[] = getGameDeck();
   cardsDisplayed: Card[] = [];
@@ -39,16 +37,28 @@ export class GameComponent implements OnInit {
 
     // hide displayed cards
 
-    this.cardsDisplayed = this.cardDeck.splice(0, 12);
+    // this.cardsDisplayed = this.cardDeck.splice(0, 12);
+    this.cardsDisplayed = [];
+    for (let i = 0; i < 12; i++) {
+      setTimeout(() => {
+        this.cardsDisplayed.push((this.cardDeck.pop()) as Card);
+      }, 75 * i);
+    }
 
-    // remove transition from card element first ?
-    // translate each card to the deck position
-    // show displayed cards
-    // translate back where they were
+    // reveal the cards after 1 second
+    setTimeout(() => {
+      // const cards = Array.from(document.querySelectorAll('.displayed .card')).map(
+      //   (node: Element) => {
+      //     const rect = node.getBoundingClientRect();
+      //     return { x: rect.x, y: rect.y }
+      //   }
+      // );
+      // console.log(cards);
+      this.cardsDisplayed.forEach((card) => (card.hidden = !card.hidden));
+    }, 1700);
 
     this.cardsWon = this.cardDeck.splice(0, 24);
     this.cardsLost = this.cardDeck.splice(0, 6);
-
 
     console.log(this.cardDeck, this.cardsDisplayed);
   }
@@ -59,7 +69,6 @@ export class GameComponent implements OnInit {
   toogleSelection(card: Card) {
     card.selected = !card.selected;
     console.warn('==> selected', card);
-
   }
 
   toggleHide() {
@@ -74,7 +83,7 @@ export class GameComponent implements OnInit {
 
   showPosition(event: MouseEvent) {
     // obtener el elemento de la carta seleccionada
-    const el: HTMLElement = (event.target as HTMLElement);
+    const el: HTMLElement = event.target as HTMLElement;
 
     // obtener el elemento .card padre de la carta seleccionada
     const card: HTMLElement | null = el.closest('.card');
