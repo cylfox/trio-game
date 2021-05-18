@@ -37,13 +37,13 @@ export class GameComponent implements OnInit {
 
     // hide displayed cards
 
-    // this.cardsDisplayed = this.cardDeck.splice(0, 12);
-    this.cardsDisplayed = [];
-    for (let i = 0; i < 12; i++) {
-      setTimeout(() => {
-        this.cardsDisplayed.push((this.cardDeck.pop()) as Card);
-      }, 75 * i);
-    }
+    this.cardsDisplayed = this.cardDeck.splice(0, 12);
+    // this.cardsDisplayed = [];
+    // for (let i = 0; i < 15; i++) {
+    //   setTimeout(() => {
+    //     this.cardsDisplayed.push((this.cardDeck.pop()) as Card);
+    //   }, 75 * i);
+    // }
 
     // reveal the cards after 1 second
     setTimeout(() => {
