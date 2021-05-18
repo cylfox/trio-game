@@ -72,10 +72,15 @@
   }
 }
 
-.selection {
+.selected {
   padding: 0.3rem;
   border: 0.2rem red solid;
   border-radius: 0.4rem;
+  transition: 0.075s ease-in-out;
+}
+
+.not-selected {
+  transition: 0.1s ease-in-out;
 }
 
 .red {

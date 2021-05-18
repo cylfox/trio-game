@@ -1,4 +1,4 @@
-<div [class.selection]="card.selected">
+<div [class.not-selected]="!card.selected" [class.selected]="card.selected">
   <div class="card" [class.hidden]="card.hidden">
     <div class="card-inner">
       <div class="front">
