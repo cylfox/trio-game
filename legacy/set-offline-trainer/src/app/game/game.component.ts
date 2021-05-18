@@ -53,8 +53,13 @@ export class GameComponent implements OnInit {
     console.log(this.cardDeck, this.cardsDisplayed);
   }
 
-  toogleVisibility(card: any) {
+  toogleVisibility(card: Card) {
     card.hidden = !card.hidden;
+  }
+  toogleSelection(card: Card) {
+    card.selected = !card.selected;
+    console.warn('==> selected', card);
+
   }
 
   toggleHide() {

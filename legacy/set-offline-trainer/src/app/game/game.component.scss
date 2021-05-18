@@ -62,7 +62,7 @@ aside {
 .card-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-gap: 2%;
+  grid-gap: 1%;
   // grid-auto-rows: minmax(100px, auto);
   position: absolute;
   top: 50%;
@@ -72,6 +72,7 @@ aside {
 
 .card-grid > * {
   // max-width: 100px;
+  align-self: center;
 }
 
 .sideboard {

@@ -48,8 +48,13 @@
         <app-card
           *ngFor="let card of cardsDisplayed"
           [card]="card"
-          (click)="showPosition($event)"
+          (click)="toogleSelection(card)"
         ></app-card>
+        <!-- <app-card
+          *ngFor="let card of cardsDisplayed"
+          [card]="card"
+          (click)="showPosition($event)"
+        ></app-card> -->
       </div>
     </div>
     <!-- </div> -->
