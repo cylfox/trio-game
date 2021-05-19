@@ -7,39 +7,50 @@
   </nav>
   <main>
     <div class="sideboard">
-      <div>
+      <!-- <div class="sideboard-grid"> -->
         <h3>Deck: {{ cardDeck.length }}</h3>
-        <div class="deck">
-          <app-card
+        <!-- <div class="deck"> -->
+          <!-- <app-card
+            class="deck-card"
+            [card]="cardDeck[0]"
+            (click)="showPosition($event)"
+          ></app-card> -->
+          <!-- <app-card
             class="deck-card"
             *ngFor="let card of cardDeck"
             [card]="card"
             (click)="showPosition($event)"
-          ></app-card>
-        </div>
-      </div>
-      <div>
+          ></app-card> -->
+        <!-- </div> -->
         <h3>Won: {{ cardsWon.length }}</h3>
-        <div class="won">
+        <!-- <div class="won">
           <app-card
+            class="deck-card"
+            [card]="cardsWon[0]"
+            (click)="toogleVisibility(cardsWon[0])"
+          ></app-card> -->
+          <!-- <app-card
             class="deck-card"
             *ngFor="let card of cardsWon"
             [card]="card"
             (click)="toogleVisibility(card)"
-          ></app-card>
-        </div>
-      </div>
-      <div>
+          ></app-card> -->
+        <!-- </div> -->
         <h3>Lost: {{ cardsLost.length }}</h3>
-        <div class="lost">
+        <!-- <div class="lost">
           <app-card
+            class="deck-card"
+            [card]="cardsLost[0]"
+            (click)="toogleVisibility(cardsLost[0])"
+          ></app-card> -->
+          <!-- <app-card
             class="deck-card"
             *ngFor="let card of cardsLost"
             [card]="card"
             (click)="toogleVisibility(card)"
-          ></app-card>
-        </div>
-      </div>
+          ></app-card> -->
+        <!-- </div>
+      </div> -->
     </div>
     <!-- <div class="game"> -->
     <div class="displayed">
