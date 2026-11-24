@@ -6,6 +6,9 @@
 @source '../index.html';
 @source './';
 
+/* The game UI's styles (ported from the approved mockup). They use the tokens below. */
+@import './ui/trio.css';
+
 @theme {
   /* Jersey 10 everywhere (one weight, 400). Swap the first family to change the font. */
   --font-display: 'Jersey 10', ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
@@ -50,6 +53,80 @@
   --color-card-red: #d4152f;
   --color-card-green: #0fa154;
   --color-card-purple: #5b1fa6;
+}
+
+
+/* ── Design tokens from the approved mockup (the game UI uses these directly) ───────────────── */
+:root {
+  color-scheme: dark;
+  /* table + backdrop */
+  --bg: #0b0916;
+  --bg-2: #171035;
+  --blob-1: #5b1a55;
+  --blob-2: #0b4b58;
+  --blob-3: #2b2277;
+  --dither: rgba(0, 0, 0, 0.22);
+  --scan: rgba(0, 0, 0, 0.13);
+  --vignette: rgba(0, 0, 0, 0.62);
+  --table-1: #16434c;
+  --table-2: #0e2d36;
+  --table-edge: #06161b;
+  --table-mark: rgba(255, 255, 255, 0.035);
+  /* ink + slabs */
+  --ink: #f5ecd6;
+  --ink-dim: #a69cc6;
+  --ink-faint: #6d6491;
+  --ink-dark: #0c0917;
+  --slab: #1a1531;
+  --slab-2: #241d45;
+  --slab-edge: #3b3168;
+  --slab-hi: rgba(255, 255, 255, 0.07);
+  --hard: rgba(0, 0, 0, 0.6);
+  --scrim: rgba(5, 3, 12, 0.62);
+  --well: #0f0c20;
+  /* cards */
+  --cream: #fbf2dc;
+  --cream-edge: #dccca6;
+  --cream-shade: rgba(120, 90, 40, 0.12);
+  --back: #2c348f;
+  --back-line: #3b45b0;
+  --back-deep: #161b57;
+  --card-red: #d4152f; /* same as SYMBOL_COLORS in symbol-data.ts */
+  --card-green: #0fa154;
+  --card-purple: #5b1fa6;
+  /* players: never red / green / purple */
+  --you: #ffc23d;
+  --you-hi: #ffe08a;
+  --you-ledge: #b67a12;
+  --you-dim: #5b4416;
+  --you-glow: rgba(255, 194, 61, 0.7);
+  --partner: #3ddcf0;
+  --partner-ledge: #168a9c;
+  --partner-dim: #144a55;
+  --partner-glow: rgba(61, 220, 240, 0.65);
+  --p3: #ff9b3d;
+  --p3-dim: #5a3313;
+  --p3-glow: rgba(255, 155, 61, 0.65);
+  --p4: #f2f2f2;
+  --p4-dim: #4a4a55;
+  --p4-glow: rgba(242, 242, 242, 0.6);
+  /* feedback + controls */
+  --bad: #ff3d52;
+  --bad-ledge: #a01b2c;
+  --bad-glow: rgba(255, 61, 82, 0.6);
+  --ok: #8df5a9;
+  --hint: #ffffff;
+  --hint-glow: rgba(255, 255, 255, 0.55);
+  --slate: #403878;
+  --slate-ledge: #241e4d;
+  --focus: #ffffff;
+  --btn-ink: #2b1700;
+  /* type: every font use goes through these three tokens (Jersey 10 has one weight, 400) */
+  --font-px: 'Jersey 10', ui-monospace, Menlo, Consolas, monospace;
+  --font-caps: 'Jersey 10', ui-monospace, Menlo, Consolas, monospace;
+  --font-sys: 'Jersey 10', ui-monospace, Menlo, Consolas, monospace;
+  /* symbol grid aspect ratio (GRID_WIDTH / GRID_HEIGHT in symbol-data.ts) */
+  --sym-ar: 26 / 13;
 }
 
 @layer base {

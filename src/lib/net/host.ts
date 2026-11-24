@@ -244,8 +244,9 @@ export function createHost(options: HostOptions): RoomSession {
       case 'dealMore':
         return reject(replyTo, intent.type, 'notInVersus');
       case 'start':
+        // The host starts the first game from the lobby, and can start a new one at any time
+        // after that (the menu's "New game", or a rematch without waiting for every request).
         if (playerId !== me.id) return reject(replyTo, 'start', 'hostOnly');
-        if (phase !== 'lobby') return reject(replyTo, 'start', 'notLobby');
         if (!canStart()) return reject(replyTo, 'start', 'needPlayers');
         return startGame();
       case 'rematch': {

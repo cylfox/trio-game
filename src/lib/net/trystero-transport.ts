@@ -22,18 +22,28 @@ export const APP_ID = 'cylfox/trio-game';
 /** One Trystero action carries every protocol message (namespace: 1–32 bytes). */
 const CHANNEL = 'trio';
 
+/**
+ * TURN relays, used when two peers can't connect directly. Phones on mobile data (CGNAT) and
+ * strict Wi-Fi often need one: a phone on 4G and a PC on Wi-Fi gets 'peer-connect-failed', while
+ * both on the same Wi-Fi works. Off by default (empty). To add one, list it here, e.g.
+ *   { urls: 'turn:turn.example.com:3478', username: 'user', credential: 'secret' }
+ */
+export const TURN_SERVERS: readonly TurnServerConfig[] = [];
+
 export interface TrysteroOptions {
+  /** Overrides TURN_SERVERS. */
   readonly turn?: TurnServerConfig[];
 }
 
 export function createTrysteroTransport(code: string, options: TrysteroOptions = {}): Transport {
+  const turn = options.turn ?? (TURN_SERVERS.length > 0 ? [...TURN_SERVERS] : undefined);
   const room = joinRoom(
     {
       appId: APP_ID,
       // Our own player id (localStorage) is the identity that matters; a fresh Trystero key per
       // page avoids IndexedDB, which some private modes block.
       identity: 'none',
-      ...(options.turn === undefined ? {} : { turnConfig: options.turn }),
+      ...(turn === undefined ? {} : { turnConfig: turn }),
     },
     code,
   );

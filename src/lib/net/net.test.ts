@@ -454,6 +454,43 @@ describe('room protocol (host + guests over the in-memory hub)', () => {
   });
 });
 
+describe('host new game', () => {
+  test('the host can start a new game mid-game or after it ends; guests cannot', () => {
+    const { hub, host, guest } = setup();
+    const a = guest('A', 'peer-a');
+    hub.flush();
+    host.act({ type: 'start' });
+    hub.flush();
+    host.act({ type: 'call' });
+    host.act({ type: 'claim', cards: aSet(host) });
+    hub.flush();
+    assert.equal(view(a.session).players[0].score, 3);
+
+    a.session.act({ type: 'start' });
+    hub.flush();
+    assert.deepEqual(a.log.of('rejected').at(-1), { type: 'rejected', intent: 'start', reason: 'hostOnly' });
+
+    const log = watch(a.session);
+    host.act({ type: 'start' });
+    hub.flush();
+    inSync(host, a.session);
+    assert.equal(log.events()[0], 'newGame', 'the guest replays the new game');
+    assert.deepEqual(view(a.session).players.map((p) => p.score), [0, 0]);
+    assert.equal(host.getState().room?.phase, 'playing');
+
+    for (let i = 0; i < 40 && !view(host).over; i++) {
+      host.act({ type: 'call' });
+      host.act({ type: 'claim', cards: aSet(host) });
+    }
+    hub.flush();
+    assert.equal(a.session.getState().room?.phase, 'over');
+    host.act({ type: 'start' });
+    hub.flush();
+    assert.equal(a.session.getState().room?.phase, 'playing', 'a rematch the host starts on its own');
+    assert.equal(view(a.session).over, false);
+  });
+});
+
 describe('train session (local engine, no network)', () => {
   test('call, claim with a hint, timeout, and a rejected claim without a call', () => {
     const time = fakeTime();
