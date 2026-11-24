@@ -32,5 +32,12 @@
   "dependencies": {
     "@fontsource/jersey-10": "^5.3.0",
     "trystero": "^0.27.0"
-  }
+  },
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cylfox/trio-game.git"
+  },
+  "homepage": "https://cylfox.github.io/trio-game/",
+  "funding": "https://ko-fi.com/cylfox"
 }
