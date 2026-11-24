@@ -1,5 +1,6 @@
 /**
- * Wire protocol between the host (runs the engine) and guests (render only).
+ * Wire protocol between the host (runs the engine) and guests (render only). The host is the room
+ * server (a Cloudflare Durable Object, over one WebSocket) or, in P2P rooms, the creator's browser.
  *
  *   guest → host   hello { v, playerId, name }   on every new connection to a peer, and on resync
  *                  act   { intent }              call | claim | hint | dealMore | start | rematch
@@ -7,9 +8,9 @@
  *                        kind 'snapshot' answers a hello (join, rejoin, resync); 'update' follows
  *                        every change. view = publicView(state) (null in the lobby); events are the
  *                        engine events of this change, for animation. at = host clock, for countdowns.
- *                  deny  { reason, maxPlayers }      'full' | 'version' | 'duplicate'
+ *                  deny  { reason, maxPlayers }      'full' | 'version' | 'duplicate' | 'notFound'
  *                  reject { intent, reason }         an intent that changed nothing, e.g. 'noCall'
- *                  closed {}                         the host left for good
+ *                  closed {}                         the host left for good (server: the room expired)
  *
  * Ordering: seq is per room incarnation (epoch) and grows by one per broadcast change. Guests drop
  * any state whose (epoch, seq) is not newer than what they have. Every state message carries the
@@ -60,7 +61,10 @@ export type GuestMessage =
   | { readonly t: 'hello'; readonly v: number; readonly playerId: string; readonly name: string }
   | { readonly t: 'act'; readonly intent: Intent };
 
-export type DenyReason = 'full' | 'version' | 'duplicate';
+/** notFound: the room server has no such room (never created, or expired). */
+export type DenyReason = 'full' | 'version' | 'duplicate' | 'notFound';
+
+const DENY_REASONS: ReadonlySet<string> = new Set<DenyReason>(['full', 'version', 'duplicate', 'notFound']);
 
 export interface StateMessage {
   readonly t: 'state';
@@ -162,8 +166,8 @@ export function parseHostMessage(raw: unknown): HostMessage | null {
       if (!Array.isArray(raw.events)) return null;
       return raw as unknown as StateMessage;
     case 'deny':
-      if (raw.reason !== 'full' && raw.reason !== 'version' && raw.reason !== 'duplicate') return null;
-      return { t: 'deny', reason: raw.reason, maxPlayers: isNum(raw.maxPlayers) ? raw.maxPlayers : MAX_PLAYERS };
+      if (typeof raw.reason !== 'string' || !DENY_REASONS.has(raw.reason)) return null;
+      return { t: 'deny', reason: raw.reason as DenyReason, maxPlayers: isNum(raw.maxPlayers) ? raw.maxPlayers : MAX_PLAYERS };
     case 'reject':
       if (typeof raw.intent !== 'string' || !INTENT_TYPES.has(raw.intent) || typeof raw.reason !== 'string') return null;
       return { t: 'reject', intent: raw.intent as IntentType, reason: raw.reason };

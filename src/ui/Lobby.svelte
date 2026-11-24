@@ -15,7 +15,7 @@
   import HowTo from './HowTo.svelte';
   import Learn from './Learn.svelte';
   import RoomPanel from './RoomPanel.svelte';
-  import type { ConnectIssue } from './types.ts';
+  import type { ConnectIssue, RoomNet } from './types.ts';
   import Section from './Section.svelte';
   import Toggles from './Toggles.svelte';
 
@@ -26,6 +26,7 @@
     me: string;
     invite: string;
     issue: ConnectIssue;
+    net: RoomNet | null;
     busy: boolean;
     ontrain: () => void;
     oncreate: () => void;
@@ -36,7 +37,7 @@
     onname: (name: string) => void;
   }
 
-  let { name = $bindable(), trainCount = $bindable(), snap, me, invite, issue, busy, ontrain, oncreate, onjoin, onleave, onretry, onstart, onname }: Props = $props();
+  let { name = $bindable(), trainCount = $bindable(), snap, me, invite, issue, net, busy, ontrain, oncreate, onjoin, onleave, onretry, onstart, onname }: Props = $props();
 
   let joinCode = $state('');
   let badCode = $state(false);
@@ -121,7 +122,7 @@
       </div>
 
       {#if inRoom && snap !== null}
-        <RoomPanel {snap} {me} myName={name} {invite} {issue} {onleave} {onretry} {onstart} />
+        <RoomPanel {snap} {me} myName={name} {invite} {issue} {net} {onleave} {onretry} {onstart} />
       {:else}
         <div class="room">
           <div class="train-group">

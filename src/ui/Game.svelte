@@ -18,6 +18,7 @@
   import { enter, leave } from './attach.ts';
   import type { CallLock } from '../lib/engine/engine.ts';
   import { ui } from './toasts.svelte.ts';
+  import { ROOM_SERVER } from '../lib/net/config.ts';
 
   let { ctl, onleave }: { ctl: GameController; onleave: () => void } = $props();
 
@@ -47,10 +48,11 @@
   const chip = $derived.by((): { text: string; tone: 'online' | 'offline' | 'away' } => {
     const snap = ctl.snap;
     if (ctl.isTrain) return { text: callMs ? t('chip.train', { n: Math.round(callMs / 1000) }) : t('chip.trainOff'), tone: 'offline' };
-    if (snap.status === 'hostAway') return { text: t('chip.reconnecting'), tone: 'away' };
+    if (snap.status === 'hostAway') return { text: ctl.net === 'server' ? t('chip.reconnectingServer') : t('chip.reconnecting'), tone: 'away' };
     const away = snap.room?.seats.find((s) => s.id !== ctl.me && !s.connected);
     if (away) return { text: t('chip.peerAway', { name: ctl.nameOf(away.id) }), tone: 'away' };
-    return { text: t('chip.online', { code: snap.code ?? '' }), tone: 'online' };
+    const direct = ctl.net === 'p2p' && ROOM_SERVER !== null;
+    return { text: t(direct ? 'chip.onlineDirect' : 'chip.online', { code: snap.code ?? '' }), tone: 'online' };
   });
 
   function openMenu(): void {

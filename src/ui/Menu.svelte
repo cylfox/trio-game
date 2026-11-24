@@ -18,7 +18,7 @@
   let { ctl, onclose, onrules, onleave }: Props = $props();
   let confirming = $state(false);
 
-  const canNewGame = $derived(ctl.isTrain || ctl.session.role === 'host');
+  const canNewGame = $derived(ctl.isTrain || ctl.isHost);
 
   function backdrop(e: PointerEvent): void {
     if (e.target === e.currentTarget) onclose();

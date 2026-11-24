@@ -1,13 +1,15 @@
 <script lang="ts">
   // The room inside the lobby card: code tiles, invite (share or copy), seats, status, Start,
-  // and the error states (room full, version, closed, can't connect).
+  // and the error states (room full, not found, version, closed, can't connect). P2P rooms get a
+  // "direct connection" marker when a room server is configured (the hybrid's fallback).
   import { T, S, anim, popIn } from '../game/motion.ts';
   import { play } from '../lib/audio/index.ts';
   import { t } from '../lib/i18n/locale.svelte.ts';
+  import { ROOM_SERVER } from '../lib/net/config.ts';
   import { MIN_PLAYERS } from '../lib/net/protocol.ts';
   import type { SessionState } from '../lib/net/session.ts';
   import { toast } from './toasts.svelte.ts';
-  import type { ConnectIssue } from './types.ts';
+  import type { ConnectIssue, RoomNet } from './types.ts';
 
   interface Props {
     snap: SessionState;
@@ -15,19 +17,24 @@
     myName: string;
     invite: string;
     issue: ConnectIssue;
+    net: RoomNet | null;
     onleave: () => void;
     onretry: () => void;
     onstart: () => void;
   }
 
-  let { snap, me, myName, invite, issue, onleave, onretry, onstart }: Props = $props();
+  let { snap, me, myName, invite, issue, net, onleave, onretry, onstart }: Props = $props();
 
   let inviteEl: HTMLInputElement | undefined = $state();
   let copied = $state(false);
   let starting = $state(false);
 
   const room = $derived(snap.room);
-  const isHost = $derived(snap.role === 'host');
+  // The creator hosts: in server rooms everyone is the protocol's guest, so go by hostId.
+  const isHost = $derived(room !== null ? room.hostId === me : snap.role === 'host');
+  const viaServer = $derived(net?.mode === 'server');
+  /** Shown on P2P rooms only when there is a server to compare with. */
+  const direct = $derived(net?.mode === 'p2p' && ROOM_SERVER !== null);
   const code = $derived(snap.code ?? '');
   const seats = $derived(room?.seats ?? []);
   const others = $derived(seats.filter((s) => s.id !== me));
@@ -41,10 +48,16 @@
     if (snap.status === 'denied') {
       if (snap.denied === 'version') return { title: t('err.versionTitle'), body: t('deny.version'), retry: false };
       if (snap.denied === 'duplicate') return { title: t('err.duplicateTitle'), body: t('deny.duplicate'), retry: false };
+      if (snap.denied === 'notFound') return { title: t('err.notFoundTitle'), body: t('err.notFoundBody', { code }), retry: false };
       return { title: t('deny.full'), body: t('deny.fullDetail', { count: room?.maxPlayers ?? 2 }), retry: false };
     }
-    if (snap.status === 'closed') return { title: t('err.closedTitle'), body: t('err.closedBody'), retry: false };
-    if (issue === 'noAnswer' && snap.status === 'connecting') return { title: t('err.connectTitle'), body: t('err.noAnswerBody', { code }), tip: t('err.connectTip'), retry: true };
+    if (snap.status === 'closed') return { title: t('err.closedTitle'), body: viaServer ? t('err.closedBodyServer') : t('err.closedBody'), retry: false };
+    if (issue === 'server' && snap.status === 'connecting') return { title: t('err.connectTitle'), body: t('err.serverBody'), retry: true };
+    if (issue === 'noAnswer' && snap.status === 'connecting') {
+      if (viaServer) return { title: t('err.connectTitle'), body: t('err.serverBody'), retry: true };
+      if (net?.fallback) return { title: t('err.connectTitle'), body: t('err.fallbackNoAnswer', { code }), retry: true };
+      return { title: t('err.connectTitle'), body: t('err.noAnswerBody', { code }), tip: t('err.connectTip'), retry: true };
+    }
     if (issue === 'peer' && snap.status === 'connecting') return { title: t('err.connectTitle'), body: t('err.connectBody'), retry: true };
     return null;
   });
@@ -134,6 +147,9 @@
     <div class="code" role="img" aria-label={t('room.codeAria', { code: code.split('').join(' ') })} {@attach tilesIn}>
       {#each code.split('') as ch, i (i)}<span class="code-tile">{ch}</span>{/each}
     </div>
+    {#if direct}
+      <p class="net-note" class:fallback={net?.fallback}>{net?.fallback ? t('net.fallback') : t('net.direct')}</p>
+    {/if}
     <div class="invite">
       <input class="field" type="text" readonly value={invite} aria-label={t('room.invite')} bind:this={inviteEl} />
       <button class="btn btn-small btn-slate" type="button" onclick={shareInvite}>{canShare ? t('room.share') : copied ? t('room.copied') : t('room.copyLink')}</button>
@@ -161,7 +177,7 @@
       {#if snap.status === 'connecting'}
         {t('room.connecting', { code })}<span class="dots"><i>.</i><i>.</i><i>.</i></span>
       {:else if snap.status === 'hostAway'}
-        {t('room.hostAway')}<span class="dots"><i>.</i><i>.</i><i>.</i></span>
+        {viaServer ? t('room.reconnecting') : t('room.hostAway')}<span class="dots"><i>.</i><i>.</i><i>.</i></span>
       {:else if isHost}
         {#if !other}{t('room.waiting')}<span class="dots"><i>.</i><i>.</i><i>.</i></span>{:else if other.connected}{t('room.ready', {
             name: nameOf(other.id, other.name),

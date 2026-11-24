@@ -1,7 +1,8 @@
 /**
  * The network as the sessions see it: a room of peers that can message each other. Messages are
- * plain JSON. Implementations: Trystero/WebRTC (trystero-transport.ts) and an in-memory hub for
- * tests (memory-transport.ts).
+ * plain JSON. Implementations: one WebSocket to the room server, whose only peer is the server
+ * (ws-transport.ts); Trystero/WebRTC for P2P rooms (trystero-transport.ts); and an in-memory hub
+ * for tests (memory-transport.ts).
  */
 export type Unsubscribe = () => void;
 

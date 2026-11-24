@@ -1,14 +1,19 @@
 <script lang="ts">
   // The app shell: backdrop and frame, screens (lobby → game → results), the session and its
   // controller, invite links, toasts, the live region, wake lock and visibility handling.
+  // Rooms open through open.ts: the room server first, P2P (Trystero, loaded lazily) as fallback.
   import { onMount } from 'svelte';
   import { GameController } from '../game/controller.svelte.ts';
   import { loadTrainCount } from '../game/prefs.ts';
   import { installAudio, play } from '../lib/audio/index.ts';
   import { isMessageKey } from '../lib/i18n/index.ts';
   import { t } from '../lib/i18n/locale.svelte.ts';
+  import { ROOM_SERVER } from '../lib/net/config.ts';
   import { createWakeLock } from '../lib/net/lifecycle.ts';
-  import { codeFromHash, inviteLink } from '../lib/net/room-code.ts';
+  import { browserOpenDeps } from '../lib/net/online.ts';
+  import { openOnline, parseRoomHash, roomHash } from '../lib/net/open.ts';
+  import type { RoomLink } from '../lib/net/open.ts';
+  import { inviteLink } from '../lib/net/room-code.ts';
   import type { Change, RoomSession, SessionState } from '../lib/net/session.ts';
   import { browserStore, forgetRoom, loadIdentity, saveName } from '../lib/net/storage.ts';
   import { createTrain } from '../lib/net/train.ts';
@@ -16,11 +21,11 @@
   import Lobby from './Lobby.svelte';
   import Results from './Results.svelte';
   import { announce, toast, ui } from './toasts.svelte.ts';
-  import type { ConnectIssue } from './types.ts';
+  import type { ConnectIssue, RoomNet } from './types.ts';
 
   type Screen = 'lobby' | 'game' | 'results';
 
-  /** A guest still looking for the host after this long sees the "can't connect" help. */
+  /** Still not connected after this long: show the "can't connect" help. */
   const CONNECT_PATIENCE_MS = 15_000;
 
   const store = browserStore();
@@ -36,11 +41,14 @@
   let ctl = $state.raw<GameController | null>(null);
   let screen = $state<Screen>('lobby');
   let issue = $state<ConnectIssue>(null);
+  /** The open room's network: the room server, or a direct (P2P) connection. */
+  let net = $state.raw<RoomNet | null>(null);
   let busy = $state(false);
   let unsubscribe: (() => void) | null = null;
   let connectTimer = 0;
 
-  const invite = $derived(snap?.code ? inviteLink(appUrl, snap.code) : '');
+  const invite = $derived(snap?.code && net ? inviteLink(appUrl, roomHash(snap.code, net.mode)) : '');
+  const viaServer = $derived(net?.mode === 'server');
 
   function nameOf(id: string, fallback: string): string {
     return fallback || ctl?.nameOf(id) || t('player.unnamed', { tag: id.slice(0, 4).toUpperCase() });
@@ -61,6 +69,7 @@
         session: s,
         me: identity.id,
         myName: () => identity.name,
+        net: net?.mode ?? null,
         onOver: () => {
           if (ctl !== null) screen = 'results';
         },
@@ -111,11 +120,11 @@
         return;
       case 'hostAway':
         play('leave');
-        toast(t('log.hostAway'), 'bad', 1800);
+        toast(viaServer ? t('log.serverAway') : t('log.hostAway'), 'bad', 1800);
         return;
       case 'hostBack':
         play('join');
-        toast(t('log.hostBack'), 'partner', 1500);
+        toast(viaServer ? t('log.serverBack') : t('log.hostBack'), 'partner', 1500);
         return;
       case 'denied':
         play('error');
@@ -129,6 +138,11 @@
           issue = 'peer';
           play('error');
           if (screen !== 'lobby') toast(t('err.connectBody'), 'bad', 5000);
+        } else if (change.code === 'server-unreachable') {
+          // Reported once per outage; the transport keeps retrying.
+          if (state.status !== 'online') issue = 'server';
+          play('error');
+          if (screen !== 'lobby') toast(t('err.serverBody'), 'bad', 4000);
         }
         return;
       case 'rejected':
@@ -138,7 +152,7 @@
         }
         return;
       case 'state':
-        if (change.kind === 'snapshot' && state.role === 'guest' && state.room?.phase === 'lobby' && session && !joinedToast) {
+        if (change.kind === 'snapshot' && state.role === 'guest' && state.room?.phase === 'lobby' && state.room.hostId !== identity.id && session && !joinedToast) {
           joinedToast = true;
           toast(t('toast.joinedRoom', { code: state.code ?? '' }), 'partner', 1500);
           play('join');
@@ -161,7 +175,7 @@
     if (next.role === 'guest') {
       connectTimer = window.setTimeout(() => {
         if (session === next && next.getState().status === 'connecting') {
-          issue = issue ?? 'noAnswer';
+          issue = issue ?? (viaServer ? 'server' : 'noAnswer');
           play('error');
         }
       }, CONNECT_PATIENCE_MS);
@@ -181,16 +195,25 @@
     s.act({ type: 'start' });
   }
 
-  async function openOnline(code: string | null): Promise<void> {
+  /** Create (null) or join a room: the room server first, a P2P room if it can't be reached. */
+  async function openRoom(link: RoomLink | null): Promise<void> {
     if (busy) return;
     saveMyName();
     busy = true;
     try {
-      // Trystero (WebRTC + Nostr signalling) loads only when a room is opened.
-      const { openRoom } = await import('../lib/net/connect.ts');
-      const opened = openRoom(code, identity, store);
-      attach(opened.session);
-      history.replaceState(null, '', `#${opened.code}`);
+      const result = await openOnline(link, identity, browserOpenDeps(ROOM_SERVER, identity, store));
+      if (!result.ok) {
+        play('error');
+        toast(t('err.serverRefused', { status: result.status }), 'bad', 4000);
+        return;
+      }
+      const { room } = result;
+      net = { mode: room.mode, fallback: room.fallback };
+      attach(room.session);
+      // A typed code that fell back to P2P keeps its plain link: a reload tries the server again.
+      const guessed = room.fallback && room.session.role === 'guest';
+      history.replaceState(null, '', `#${guessed ? room.code : roomHash(room.code, room.mode)}`);
+      // A fallback is announced in the room panel (net.fallback), which stays visible.
     } catch (err) {
       console.error(err);
       issue = 'noAnswer';
@@ -211,6 +234,7 @@
     session = null;
     snap = null;
     issue = null;
+    net = null;
     screen = 'lobby';
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
     if (s !== null) await s.leave().catch(() => {});
@@ -219,8 +243,11 @@
 
   async function retry(): Promise<void> {
     const code = snap?.code ?? null;
+    // A room keeps its network; only a typed code that fell back to P2P tries the server again.
+    const guessed = net?.mode === 'p2p' && net.fallback && snap?.role === 'guest';
+    const mode = guessed ? null : (net?.mode ?? null);
     await leave();
-    if (code !== null) await openOnline(code);
+    if (code !== null) await openRoom({ code, mode });
   }
 
   // Keep the screen on during a game.
@@ -236,11 +263,11 @@
   onMount(() => {
     document.documentElement.classList.add('trio-ui');
     const offAudio = installAudio();
-    const code = codeFromHash(location.hash);
-    if (code !== null) void openOnline(code);
+    const link = parseRoomHash(location.hash);
+    if (link !== null) void openRoom(link);
     const onHash = () => {
-      const next = codeFromHash(location.hash);
-      if (next !== null && next !== snap?.code) void leave().then(() => openOnline(next));
+      const next = parseRoomHash(location.hash);
+      if (next !== null && next.code !== snap?.code) void leave().then(() => openRoom(next));
     };
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {
@@ -283,10 +310,11 @@
         me={identity.id}
         {invite}
         {issue}
+        {net}
         {busy}
         ontrain={startTrain}
-        oncreate={() => openOnline(null)}
-        onjoin={(code) => openOnline(code)}
+        oncreate={() => openRoom(null)}
+        onjoin={(code) => openRoom({ code, mode: null })}
         onleave={leave}
         onretry={retry}
         onstart={() => session?.act({ type: 'start' })}

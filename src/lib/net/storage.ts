@@ -4,9 +4,11 @@
  *   trio:player       { id, name }   who this browser is, kept across rooms and reloads
  *   trio:room:CODE    SavedRoom      the host's room, saved after every change
  */
-import type { GameState } from '../engine/engine.ts';
 import { cleanName } from './protocol.ts';
-import type { Phase } from './protocol.ts';
+import { isSavedRoom } from './room-core.ts';
+import type { Identity, SavedRoom } from './room-core.ts';
+
+export type { Identity, SavedRoom, SavedSeat } from './room-core.ts';
 
 export interface KeyValueStore {
   get(key: string): string | null;
@@ -87,13 +89,6 @@ function readJson(store: KeyValueStore, key: string): unknown {
 
 // ── Identity ─────────────────────────────────────────────────────────────────────────────────
 
-export interface Identity {
-  /** Stable per browser. Maps this player to their seat when they reconnect. */
-  readonly id: string;
-  /** Display name; '' means "not set" (the UI shows a fallback). */
-  readonly name: string;
-}
-
 const PLAYER_KEY = 'trio:player';
 
 export function newPlayerId(): string {
@@ -123,44 +118,7 @@ export function saveName(store: KeyValueStore, name: string): Identity {
 /** Saved rooms older than this are ignored and pruned. */
 export const ROOM_TTL_MS = 12 * 60 * 60 * 1000;
 
-export interface SavedSeat {
-  readonly id: string;
-  readonly name: string;
-  readonly rematch: boolean;
-}
-
-export interface SavedRoom {
-  readonly v: 1;
-  readonly code: string;
-  readonly epoch: string;
-  readonly seq: number;
-  readonly savedAt: number;
-  readonly hostId: string;
-  readonly maxPlayers: number;
-  readonly phase: Phase;
-  readonly seats: readonly SavedSeat[];
-  readonly game: GameState | null;
-}
-
 const roomKey = (code: string) => `trio:room:${code}`;
-
-function isSavedRoom(raw: unknown, code: string): raw is SavedRoom {
-  if (raw === null || typeof raw !== 'object') return false;
-  const r = raw as Record<string, unknown>;
-  const game = r.game as Record<string, unknown> | null | undefined;
-  return (
-    r.v === 1 &&
-    r.code === code &&
-    typeof r.epoch === 'string' &&
-    typeof r.seq === 'number' &&
-    typeof r.savedAt === 'number' &&
-    typeof r.hostId === 'string' &&
-    typeof r.maxPlayers === 'number' &&
-    (r.phase === 'lobby' || r.phase === 'playing' || r.phase === 'over') &&
-    Array.isArray(r.seats) &&
-    (game === null || (typeof game === 'object' && game !== undefined && game.schema === 2))
-  );
-}
 
 /** The saved room for `code` if this browser hosts it (and it is not stale). */
 export function loadRoom(store: KeyValueStore, code: string, now: number): SavedRoom | null {

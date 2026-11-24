@@ -52,6 +52,8 @@ export interface ControllerOptions {
   readonly myName: () => string;
   /** The game ended (after its end animation), or "End game" in Train. */
   readonly onOver: () => void;
+  /** Online rooms: the room server or a direct (P2P) connection. */
+  readonly net?: 'server' | 'p2p' | null;
 }
 
 type El = HTMLElement | null;
@@ -161,6 +163,16 @@ export class GameController {
 
   get isTrain(): boolean {
     return this.session.role === 'train';
+  }
+
+  /** The room's creator: starts games, new games and rematches. (On the room server everyone is a protocol guest.) */
+  get isHost(): boolean {
+    const room = this.snap?.room;
+    return room ? room.hostId === this.me : this.session.role === 'host';
+  }
+
+  get net(): 'server' | 'p2p' | null {
+    return this.opts.net ?? null;
   }
 
   /** Player ids in panel order: me first, then seat order. */

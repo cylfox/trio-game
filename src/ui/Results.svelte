@@ -28,9 +28,9 @@
   const ranked = $derived(players.slice().sort((a, b) => b.score - a.score));
   const elapsed = $derived(view === null ? 0 : Math.max(0, (ctl.endedAt || ctl.session.hostNow()) - view.startedAt));
 
-  // Rematch: the host starts it; a guest asks through the rematch intent.
+  // Rematch: the host (the room's creator) starts it; a guest asks through the rematch intent.
   const room = $derived(ctl.snap.room);
-  const isHost = $derived(ctl.session.role === 'host');
+  const isHost = $derived(ctl.isHost);
   const mySeat = $derived(room?.seats.find((s) => s.id === ctl.me));
   const otherSeat = $derived(room?.seats.find((s) => s.id !== ctl.me));
   const rematchStatus = $derived.by(() => {

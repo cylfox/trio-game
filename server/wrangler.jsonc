@@ -1,0 +1,28 @@
+// The Trio room server: one Worker (routes in src/http.ts) and two Durable Object classes: Room,
+// one per room code, and Limiter, one per client IP (rate limits). Free plan: Durable Objects must
+// be SQLite-backed (new_sqlite_classes).
+//   npm run server:dev      local, no Cloudflare account needed (http://127.0.0.1:8787)
+//   npm run server:deploy   needs `npx wrangler login` once
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "trio-game",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-20",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOM", "class_name": "Room" },
+      { "name": "LIMITER", "class_name": "Limiter" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room", "Limiter"] }],
+  "vars": {
+    // Which websites may create and join rooms: the GitHub Pages site, plus local dev and preview
+    // servers. Comma-separated; ':*' allows any port. This stops other *websites* from using the
+    // server, not scripts (they can send any Origin): that's what the per-IP rate limits are for.
+    "ALLOWED_ORIGINS": "https://cylfox.github.io,http://localhost:*,http://127.0.0.1:*"
+  },
+  "dev": { "ip": "127.0.0.1", "port": 8787 }
+}

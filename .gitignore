@@ -21,7 +21,12 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# Env files
+# Env files (.env.development and .env.production are committed: they only hold public URLs)
 .env
 .env.*
 !.env.example
+!.env.development
+!.env.production
+
+# Wrangler's local state (wrangler dev)
+.wrangler/

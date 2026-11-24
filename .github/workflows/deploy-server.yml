@@ -1,0 +1,67 @@
+name: Deploy room server
+
+# Deploys the Cloudflare Worker in server/ (the room server). The shared engine and room rules
+# (src/lib/engine, src/lib/net) are bundled into it, so changes there redeploy it too.
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN (the "Edit Cloudflare Workers" template) and
+# CLOUDFLARE_ACCOUNT_ID. Without them the deploy job is skipped, not failed.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'src/lib/engine/**'
+      - 'src/lib/net/**'
+      - '.github/workflows/deploy-server.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time; let an in-progress one finish.
+concurrency:
+  group: room-server
+  cancel-in-progress: false
+
+jobs:
+  secrets:
+    name: Check for Cloudflare secrets
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Room server not deployed::Set the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets to deploy the Worker from CI."
+          fi
+
+  deploy:
+    name: Deploy the Worker
+    needs: secrets
+    if: needs.secrets.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run server:check
+
+      # Uses the wrangler from package.json (already installed by npm ci).
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config server/wrangler.jsonc

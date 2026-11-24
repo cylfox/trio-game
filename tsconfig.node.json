@@ -18,6 +18,6 @@
     "noUnusedParameters": true,
     "skipLibCheck": true
   },
-  "include": ["vite.config.ts", "scripts/**/*.ts", "src/**/*.test.ts"],
+  "include": ["vite.config.ts", "scripts/**/*.ts", "src/**/*.test.ts", "server/test/**/*.ts"],
   "exclude": ["legacy", "node_modules", "dist"]
 }

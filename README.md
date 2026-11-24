@@ -4,7 +4,7 @@ A pixel-art card game about spotting sets, made for phones. Play head to head wi
 
 **▶ Play: <https://cylfox.github.io/trio-game/>**
 
-It's a static site on GitHub Pages: no server, no accounts, no ads. The two phones talk to each other directly.
+It's a static site on GitHub Pages plus one small room server on Cloudflare's free plan: no accounts, no ads.
 
 <p>
   <img src="docs/screenshots/lobby.png" width="200" alt="Lobby with Train, Create room and Join with code">
@@ -55,11 +55,26 @@ Wrong picks, timeouts and hint presses are all counted. Sets found with a hint d
 
 ## Playing with a friend
 
-The player who creates the room is the **host**. Their phone runs the game, and the other phone only sends what its player does. If the host reloads, the room resumes. If the other player drops, they get their seat and score back when they reconnect.
+Each room lives on a small room server: a Cloudflare Worker with one [Durable Object](https://developers.cloudflare.com/durable-objects/) per room, in [`server/`](server/). Both phones connect to it over a WebSocket. The server runs the game and the call countdown, so neither phone has a head start, and it works on any network, 4G included.
 
-Public [Nostr](https://nostr.com/) relays only introduce the two phones to each other (via [Trystero](https://github.com/dmotz/trystero)). After that, the game runs directly between the phones over WebRTC.
+Either phone can lock, switch apps or reload. The game keeps running, the countdown still runs out on time, and the player gets their seat and score back when they reconnect. The player who creates the room is its **host**: they start games, new games and rematches. A room is deleted after a day without play.
 
-> **Same Wi-Fi works best for now.** Some networks block direct phone-to-phone connections: many mobile carriers, corporate and university Wi-Fi, and some VPNs. For example, a phone on 4G can't reach a PC on home Wi-Fi. Fixing that needs a TURN relay. To add one, list it in `TURN_SERVERS` in [`src/lib/net/trystero-transport.ts`](src/lib/net/trystero-transport.ts).
+**If the room server can't be reached** (it's down, or out of its free daily quota), Create room makes a direct, peer-to-peer room instead: the creator's phone runs the game, and the phones talk over WebRTC, introduced by public [Nostr](https://nostr.com/) relays via [Trystero](https://github.com/dmotz/trystero). Its invite link ends in `#p-CODE`, so the other phone connects directly too, and the room shows "Direct connection". A typed code tries the server first, then a direct connection. A room never switches between the two.
+
+> **Direct connections work best on the same Wi-Fi.** Some networks block phone-to-phone connections: many mobile carriers, corporate and university Wi-Fi, and some VPNs. To get past them, add a TURN relay to `TURN_SERVERS` in [`src/lib/net/trystero-transport.ts`](src/lib/net/trystero-transport.ts).
+
+### Free plan
+
+The room server fits in Cloudflare's Workers Free plan, which needs SQLite-backed Durable Objects. It allows 100,000 Durable Object requests and 100,000 rows written a day. A game costs about a hundred storage writes and a few dozen requests, so that's several hundred games a day. Past a limit, Cloudflare returns errors until the daily reset at 00:00 UTC, and new rooms fall back to direct connections.
+
+### Abuse protection
+
+The repo is public, so anyone can find the server's address.
+
+- **Origins.** Only `https://cylfox.github.io` and local dev servers may create or join rooms (`ALLOWED_ORIGINS` in [`server/wrangler.jsonc`](server/wrangler.jsonc)). That stops other websites, but not scripts, which can send any origin.
+- **Rate limits per IP.** 10 rooms created and 30 joins (connections) a minute. Past that, the server answers `429` with `Retry-After`, and the client falls back to a direct connection. The count is kept in this Worker's memory first, then in one small Durable Object per hashed IP, so it holds across Cloudflare's machines.
+- **Per connection.** Messages over 4 KB or of the wrong shape are ignored. A flood (more than about 8 messages a second) or a run of bad messages closes the socket. A room holds at most 8 sockets and 2 players.
+- **No bill.** On the free plan, exhausting a quota only makes the server error until the next day; it can't produce a bill.
 
 ## Development
 
@@ -69,23 +84,47 @@ Requires Node 24 or newer.
 git clone https://github.com/cylfox/trio-game.git
 cd trio-game
 npm ci
-npm run dev       # http://localhost:5173/trio-game/
-npm test          # engine, protocol, UI logic, audio, i18n and symbol tests (node --test)
-npm run check     # svelte-check + tsc, strict
-npm run build     # production build into dist/
-npm run preview   # serve dist/ at /trio-game/
-npm run symbols   # regenerate src/lib/symbol-data.ts from assets/pixel-symbols.json
-npm run icons     # regenerate the icons in public/ (dev only; the outputs are committed)
+npm run dev         # http://localhost:5173/trio-game/
+npm run server:dev  # the room server on http://127.0.0.1:8787 (wrangler dev, no account needed)
+npm test            # engine, protocol, room server, UI logic, audio, i18n and symbol tests (node --test)
+npm run check       # svelte-check + tsc, strict, and the Worker's types
+npm run build       # production build into dist/
+npm run preview     # serve dist/ at /trio-game/
+npm run symbols     # regenerate src/lib/symbol-data.ts from assets/pixel-symbols.json
+npm run icons       # regenerate the icons in public/ (dev only; the outputs are committed)
 ```
 
-To play against yourself on one computer, open `http://localhost:5173/trio-game/` and `http://127.0.0.1:5173/trio-game/`. They're different origins, so each gets its own player. Real phones need HTTPS, so test those on the Pages deployment. Every push to `main` deploys through [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), after the type check, tests and build pass.
+To play against yourself on one computer, run `npm run server:dev` and `npm run dev`, then open `http://localhost:5173/trio-game/` and `http://127.0.0.1:5173/trio-game/`. They're different origins, so each gets its own player. Without `server:dev` running, rooms fall back to direct connections. Real phones need HTTPS, so test those on the Pages deployment.
 
-**Stack:** Vite, Svelte 5, TypeScript (strict), Tailwind CSS v4 and Trystero.
+### Room server
+
+`VITE_ROOM_SERVER` tells the app where the room server is. Vite reads it at build time:
+
+| File | Value |
+|---|---|
+| `.env.development` (`npm run dev`) | `ws://127.0.0.1:8787`, the local `npm run server:dev` |
+| `.env.production` (`npm run build`, Pages) | `wss://trio-game.cylfox.workers.dev` |
+
+Leave it empty for direct connections only, as before the room server. A `.env.development.local` file overrides it without being committed.
+
+To deploy the Worker by hand:
+
+```sh
+npx wrangler login     # once, opens the browser
+npm run server:deploy  # wrangler deploy: https://trio-game.cylfox.workers.dev
+```
+
+[`.github/workflows/deploy-server.yml`](.github/workflows/deploy-server.yml) redeploys it on pushes to `main` that touch `server/`, `src/lib/engine/` or `src/lib/net/`. It needs the repository secrets `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" token template) and `CLOUDFLARE_ACCOUNT_ID`; without them it skips. After changing `server/wrangler.jsonc`, run `npm run server:types` to refresh `server/worker-configuration.d.ts`.
+
+The site itself deploys through [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) on every push to `main`, after the type check, tests and build pass.
+
+**Stack:** Vite, Svelte 5, TypeScript (strict), Tailwind CSS v4, Cloudflare Workers and Durable Objects (Wrangler), and Trystero for direct connections.
 
 | Path | What's in it |
 |---|---|
 | `src/lib/engine/` | The game engine. It's pure, has no dependencies, and takes time as an input. Every change returns `{state, events}`, and the events drive the animations. |
-| `src/lib/net/` | Rooms and codes, the host/guest protocol, the `Transport` interface (Trystero and in-memory), rejoin and saved rooms. |
+| `src/lib/net/` | Rooms and codes, the room rules (`room-core.ts`, shared by the server and P2P hosts), the host/guest protocol, transports (WebSocket, Trystero, in-memory), server-or-P2P choice (`open.ts`), rejoin and saved rooms. |
+| `server/` | The room server: a Cloudflare Worker (routes, rate limits) and the `Room` Durable Object (sockets, storage, alarms). It imports the engine and room rules from `src/lib/`. |
 | `src/game/` | Board layout, the event queue that turns engine events into animation steps, train stats and the spot clock. |
 | `src/ui/` | The Svelte screens: lobby, game, results, rules, menu. |
 | `src/lib/audio/` | The Web Audio synth and its sound recipes. No audio files. |
@@ -106,6 +145,6 @@ If you enjoy Trio, you can buy me a coffee on [Ko-fi](https://ko-fi.com/cylfox).
 Trio is free software under the [GNU General Public License v3.0 or later](LICENSE).
 
 - Font: [Jersey 10](https://fonts.google.com/specimen/Jersey+10) by The Soft Type Project Authors ([Sarah Cadigan-Fried](https://github.com/scfried/soft-type-jersey)), SIL Open Font License 1.1, self-hosted through Fontsource.
-- Peer-to-peer: [Trystero](https://github.com/dmotz/trystero) (MIT). UI: [Svelte](https://svelte.dev/) (MIT). Build: [Vite](https://vite.dev/) and [Tailwind CSS](https://tailwindcss.com/) (MIT).
+- Peer-to-peer: [Trystero](https://github.com/dmotz/trystero) (MIT). UI: [Svelte](https://svelte.dev/) (MIT). Build: [Vite](https://vite.dev/) and [Tailwind CSS](https://tailwindcss.com/) (MIT). Room server: [Wrangler](https://github.com/cloudflare/workers-sdk) (MIT or Apache 2.0).
 
 Trio's matching rule comes from the card game SET®. Trio is an independent fan project. It isn't affiliated with or endorsed by the makers of SET.

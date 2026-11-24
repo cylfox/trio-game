@@ -5,13 +5,17 @@
   import type { CardId, GameEvent } from '../lib/engine/engine.ts';
   import { LANGS, isMessageKey } from '../lib/i18n/index.ts';
   import { cardName, locale, seconds, setLang, t } from '../lib/i18n/locale.svelte.ts';
-  import { openRoom, openTrain } from '../lib/net/connect.ts';
+  import { ROOM_SERVER } from '../lib/net/config.ts';
   import { createWakeLock, onVisible } from '../lib/net/lifecycle.ts';
+  import { browserOpenDeps } from '../lib/net/online.ts';
+  import { openOnline, parseRoomHash, roomHash } from '../lib/net/open.ts';
+  import type { NetMode, RoomLink } from '../lib/net/open.ts';
   import { MIN_PLAYERS } from '../lib/net/protocol.ts';
   import type { DenyReason, Seat } from '../lib/net/protocol.ts';
-  import { codeFromHash, inviteLink, normalizeCode } from '../lib/net/room-code.ts';
+  import { inviteLink, normalizeCode } from '../lib/net/room-code.ts';
   import type { Change, RoomSession, SessionState } from '../lib/net/session.ts';
   import { browserStore, forgetRoom, loadIdentity, saveName } from '../lib/net/storage.ts';
+  import { createTrain } from '../lib/net/train.ts';
   import CardTile from './CardTile.svelte';
 
   type Tone = 'info' | 'good' | 'bad';
@@ -35,6 +39,7 @@
   let copied = $state(false);
   let session = $state.raw<RoomSession | null>(null);
   let snap = $state.raw<SessionState | null>(null);
+  let netMode = $state<NetMode>('server');
   let selected = $state<CardId[]>([]);
   let hintCard = $state<CardId | null>(null);
   let now = $state(Date.now());
@@ -50,7 +55,7 @@
   const myCall = $derived(lock !== null && lock.playerId === me);
   const inGame = $derived(view !== null && view.players.some((p) => p.id === me));
   const remaining = $derived(lock === null || lock.deadline === null ? null : Math.max(0, lock.deadline - now));
-  const invite = $derived(snap?.code ? inviteLink(appUrl, snap.code) : '');
+  const invite = $derived(snap?.code ? inviteLink(appUrl, roomHash(snap.code, netMode)) : '');
   const mySeat = $derived(room?.seats.find((s) => s.id === me));
   const stats = $derived(view === null ? undefined : playerStats(view, me));
   const lastAttempt = $derived(stats?.attempts.at(-1));
@@ -82,7 +87,7 @@
   }
 
   function denyText(reason: DenyReason): string {
-    return reason === 'full' ? t('deny.full') : reason === 'version' ? t('deny.version') : t('deny.duplicate');
+    return reason === 'full' ? t('deny.full') : reason === 'version' ? t('deny.version') : reason === 'notFound' ? t('deny.notFound') : t('deny.duplicate');
   }
 
   function points(score: number): string {
@@ -180,23 +185,26 @@
     nameInput = identity.name;
   }
 
-  function startOnline(code: string | null): void {
+  async function startOnline(link: RoomLink | null): Promise<void> {
     saveMyName();
-    const opened = openRoom(code, identity, store);
-    attach(opened.session);
-    history.replaceState(null, '', `#${opened.code}`);
+    const result = await openOnline(link, identity, browserOpenDeps(ROOM_SERVER, identity, store));
+    if (!result.ok) return add(() => t('err.serverRefused', { status: result.status }), 'bad');
+    netMode = result.room.mode;
+    attach(result.room.session);
+    if (result.room.fallback) add(() => t('net.fallback'), 'bad');
+    history.replaceState(null, '', `#${roomHash(result.room.code, result.room.mode)}`);
   }
 
   function startTrain(): void {
     saveMyName();
-    attach(openTrain(identity, noLimit ? { callMs: null } : undefined));
+    attach(createTrain({ playerId: identity.id, config: noLimit ? { callMs: null } : undefined }));
   }
 
   function joinTyped(event: SubmitEvent): void {
     event.preventDefault();
     const code = normalizeCode(codeInput);
     codeError = code === null;
-    if (code !== null) startOnline(code);
+    if (code !== null) void startOnline({ code, mode: null });
   }
 
   async function leave(): Promise<void> {
@@ -257,11 +265,11 @@
   });
 
   onMount(() => {
-    const code = codeFromHash(location.hash);
-    if (code !== null) startOnline(code);
+    const link = parseRoomHash(location.hash);
+    if (link !== null) void startOnline(link);
     const onHash = () => {
-      const next = codeFromHash(location.hash);
-      if (next !== null && next !== snap?.code) void leave().then(() => startOnline(next));
+      const next = parseRoomHash(location.hash);
+      if (next !== null && next.code !== snap?.code) void leave().then(() => startOnline(next));
     };
     window.addEventListener('hashchange', onHash);
     const offVisible = onVisible(() => session?.resync());
@@ -313,7 +321,7 @@
 
     <section class="flex flex-col gap-2 rounded-lg border-2 border-slab-edge bg-slab p-3">
       <h2 class="font-display text-2xl">{t('menu.online')}</h2>
-      <button type="button" class="rounded bg-partner px-4 py-2 font-display text-2xl text-ink-dark" onclick={() => startOnline(null)}
+      <button type="button" class="rounded bg-partner px-4 py-2 font-display text-2xl text-ink-dark" onclick={() => void startOnline(null)}
         >{t('menu.create')}</button
       >
       <form class="flex gap-2" onsubmit={joinTyped}>

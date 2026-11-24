@@ -1,7 +1,8 @@
 /**
  * What the UI talks to: one RoomSession per screen, whatever the role.
- *   host   runs the engine, owns the room, broadcasts (host.ts)
- *   guest  renders the host's views and sends intents (guest.ts)
+ *   host   P2P rooms: the creator's browser runs the engine, owns the room, broadcasts (host.ts)
+ *   guest  renders the host's views and sends intents (guest.ts). In server rooms everyone is a
+ *          guest of the room server, the creator included (their host powers come from hostId).
  *   train  runs the engine locally, no network (train.ts)
  */
 import type { GameEvent, PublicView } from '../engine/engine.ts';
@@ -13,7 +14,7 @@ export type Role = 'host' | 'guest' | 'train';
 /**
  * connecting  guest: waiting for the host's first snapshot
  * online      in sync with the host (always, for host and train)
- * hostAway    guest: the host's connection dropped; waiting for it to come back
+ * hostAway    guest: the connection to the host (or the room server) dropped; reconnecting
  * denied      guest: the host turned us away (see `denied`)
  * closed      guest: the host closed the room
  */

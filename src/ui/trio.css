@@ -535,6 +535,20 @@ html.trio-ui body {
 .seat.away {
   opacity: 0.6;
 }
+/* P2P room marker (direct connection), and the notice when the room server was unreachable */
+.net-note {
+  text-align: center;
+  font: 400 15px/1.15 var(--font-caps);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+.net-note.fallback {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 2px dashed var(--p3);
+  color: var(--ink);
+}
 .status {
   text-align: center;
   font: 400 16px var(--font-caps);
