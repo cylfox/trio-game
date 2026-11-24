@@ -1,0 +1,110 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+header {
+  background-color: red;
+  border: 2px black solid;
+  height: 50px;
+}
+
+nav {
+  background-color: orange;
+  border: 2px black solid;
+  height: 40px;
+}
+
+main {
+  background-color: teal;
+  border: 2px black solid;
+  height: 100%;
+
+  display: flex;
+  justify-content: space-between;
+  // flex-wrap: wrap;
+
+  // width: 80%;
+}
+
+footer {
+  background-color: green;
+  border: 2px black solid;
+  height: 30px;
+}
+
+aside {
+  background-color: salmon;
+  border: 2px black solid;
+  height: 100%;
+  width: 300px;
+  // width: 300px;
+  // margin-left: auto;
+}
+
+// .menu {
+//   display: flex;
+//   justify-content: left;
+//   // padding: 10px;
+//   width: 100%;
+//   border: 2px black solid;
+//   background-color: slateblue;
+// }
+
+.game {
+  height: 100%;
+  margin: 0;
+  width: 80%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.card-grid {
+  display: grid;
+  // grid-template-columns: repeat(4, 1fr);
+
+  grid-template-rows: repeat(3, 1fr);
+  grid-auto-flow: column;
+
+  grid-gap: 1%;
+  // grid-auto-rows: minmax(100px, auto);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-53%);
+  width: 100%;
+}
+
+.card-grid > * {
+  // max-width: 100px;
+  align-self: center;
+}
+
+.sideboard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+  width: 300px;
+  background-color: salmon;
+  border: 2px black solid;
+}
+
+.displayed {
+  height: 100%;
+  width: 100%;
+  max-width: 75vh;
+  margin: 0.5rem;
+  position: relative;
+}
+
+.deck-card {
+  position: absolute;
+}
+
+.deck,
+.won,
+.lost {
+  min-height: 150px;
+}

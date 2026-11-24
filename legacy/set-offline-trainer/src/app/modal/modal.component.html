@@ -1,0 +1,10 @@
+<div class="background" (click)="toggleVisibility($event)">
+  <div class="modal">
+    <nav class="topbar">
+      <button class="btn-close" (click)="toggleVisibility($event)">Toggle Modal</button>
+    </nav>
+    <div class="content">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>
