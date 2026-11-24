@@ -1,27 +1,47 @@
-# SetOfflineTrainer
+# Set Offline Trainer
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.2.6.
+An unfinished Angular 11 rewrite of the [Set](https://en.wikipedia.org/wiki/Set_(card_game)) card game that focuses on how the cards look and move: SVG card symbols, a card back, deal and flip animations, and a modal.
 
-## Development server
+The playable version, with set validation, scoring and dealing extra rows, is [angular-set-game](https://github.com/cylfox/angular-set-game). This repo reworks the presentation and doesn't have game logic yet.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## The cards
 
-## Code scaffolding
+As in the real game, the deck has 81 cards: every combination of four features with three values each.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+| Feature | Values |
+| ------- | ------ |
+| Shape   | diamond, squiggle, oval |
+| Colour  | red, green, purple |
+| Number  | one, two, three |
+| Shading | solid, striped, open |
 
-## Build
+Three cards form a set if each feature is either all the same or all different across them. This repo doesn't check sets yet; that logic lives in angular-set-game.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+## What's implemented
 
-## Running unit tests
+- **SVG symbols**: a solid, striped and open version of each shape (`src/assets/*.svg`, from the PSD sources in `src/assets/psd`), recoloured with CSS filters. There's also a card back with the SET logo.
+- **Card component**: a 3D flip between front and back, and a highlight for selected cards.
+- **Game screen** (`/game`):
+  - **New Game** shuffles the deck and deals 12 cards face down. They slide in from the top and flip face up after about 1.7 s.
+  - Clicking a card toggles its selection.
+  - A sidebar shows the deck, won and lost counts. For now, New Game fills the won and lost piles with placeholder cards from the deck.
+  - **Toggle Hide** flips the cards that are still in the deck.
+  - **Toggle Modal** opens a modal that fades in and out (Angular animations) and closes from its button or by clicking the backdrop.
+- **Test screen** (`/test`): renders a single random card.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Getting started
 
-## Running end-to-end tests
+```bash
+npm install
+npm start      # ng serve, then open http://localhost:4200/game
+npm run build
+npm test       # Karma unit tests
+npm run lint
+npm run e2e    # Protractor
+```
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+The root route (`/`) has no component, so it shows a blank page.
 
-## Further help
+## Status
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Unfinished. The layout still has placeholder header and aside areas, and there's no set checking, scoring or end of game. `GameComponent.showPosition` is an experiment for moving a card to another card's position with CSS transforms, and isn't wired up in the template.
