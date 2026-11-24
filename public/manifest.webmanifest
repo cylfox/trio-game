@@ -1,0 +1,18 @@
+{
+  "id": "/trio-game/",
+  "name": "Trio",
+  "short_name": "Trio",
+  "description": "A quick 2-player card game of spotting sets. Play a friend online or train solo.",
+  "start_url": "/trio-game/",
+  "scope": "/trio-game/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0916",
+  "theme_color": "#0b0916",
+  "icons": [
+    { "src": "/trio-game/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/trio-game/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/trio-game/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/trio-game/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

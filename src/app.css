@@ -1,0 +1,74 @@
+/* Self-hosted Jersey 10 (Fontsource, latin + latin-ext): no third-party font requests. */
+@import '@fontsource/jersey-10';
+
+/* Scan only the app for class names: never legacy/ or node_modules. */
+@import 'tailwindcss' source(none);
+@source '../index.html';
+@source './';
+
+@theme {
+  /* Jersey 10 everywhere (one weight, 400). Swap the first family to change the font. */
+  --font-display: 'Jersey 10', ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+  --font-sans: 'Jersey 10', ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* Jersey 10 renders small for its size: the ramp is ~1.4× Tailwind's, and nothing goes under
+     15px. Pixel-font line heights stay tight. */
+  --text-xs: 0.9375rem;
+  --text-xs--line-height: 1.15;
+  --text-sm: 1.0625rem;
+  --text-sm--line-height: 1.15;
+  --text-base: 1.25rem;
+  --text-base--line-height: 1.2;
+  --text-lg: 1.5rem;
+  --text-lg--line-height: 1.15;
+  --text-xl: 1.75rem;
+  --text-xl--line-height: 1.1;
+  --text-2xl: 2.125rem;
+  --text-2xl--line-height: 1.05;
+  --text-3xl: 2.625rem;
+  --text-3xl--line-height: 1;
+  --text-4xl: 3.125rem;
+  --text-4xl--line-height: 1;
+  --text-5xl: 4.25rem;
+  --text-5xl--line-height: 1;
+
+  /* Palette from the look-and-feel mockup. */
+  --color-night: #0b0916;
+  --color-slab: #1a1531;
+  --color-slab-edge: #3b3168;
+  --color-well: #0f0c20;
+  --color-ink: #f5ecd6;
+  --color-ink-dim: #a69cc6;
+  --color-ink-faint: #6d6491;
+  --color-ink-dark: #0c0917;
+  --color-cream: #fbf2dc;
+  --color-cream-edge: #dccca6;
+  --color-you: #ffc23d;
+  --color-partner: #3ddcf0;
+  --color-bad: #ff3d52;
+  --color-ok: #8df5a9;
+  --color-card-red: #d4152f;
+  --color-card-green: #0fa154;
+  --color-card-purple: #5b1fa6;
+}
+
+@layer base {
+  html {
+    background: var(--color-night);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    min-height: 100dvh;
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
