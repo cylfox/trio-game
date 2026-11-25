@@ -22,7 +22,7 @@
     // Which websites may create and join rooms: the Cloudflare Pages site, plus local dev and preview
     // servers. Comma-separated; ':*' allows any port. This stops other *websites* from using the
     // server, not scripts (they can send any Origin): that's what the per-IP rate limits are for.
-    "ALLOWED_ORIGINS": "https://trio.cylfox.com,https://trio-game-7ma.pages.dev,https://cylfox.github.io,http://localhost:*,http://127.0.0.1:*"
+    "ALLOWED_ORIGINS": "https://trio.cylfox.com,https://trio-game-7ma.pages.dev,http://localhost:*,http://127.0.0.1:*"
   },
   "dev": { "ip": "127.0.0.1", "port": 8787 }
 }
