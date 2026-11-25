@@ -13,12 +13,16 @@
  * and all, back. In the lobby a disconnected seat is freed, except the host's. Players who join
  * mid-game watch and play from the next game. Only the host starts games (any phase).
  *
+ * Leaving: a guest that leaves on purpose says bye first; its seat is marked quit, so the others
+ * hear "left" rather than "lost connection". While a seated player is away mid-game the game is
+ * paused (isPaused): calls are refused, a call already running still resolves.
+ *
  * No DOM, no storage, no timers of its own: the clock and schedule are injected.
  */
 import { mulberry32, publicView } from '../engine/engine.ts';
 import type { Action, GameConfigInput, GameEvent, GameState, PublicView, Rng } from '../engine/engine.ts';
 import { createGameDriver } from './driver.ts';
-import { MAX_PLAYERS, MIN_PLAYERS, PROTOCOL_VERSION, cleanName, parseGuestMessage } from './protocol.ts';
+import { MAX_PLAYERS, MIN_PLAYERS, PROTOCOL_VERSION, cleanName, isPaused, parseGuestMessage } from './protocol.ts';
 import type { DenyReason, HostMessage, Intent, IntentType, Phase, RoomInfo, StateMessage } from './protocol.ts';
 import { systemClock, systemSchedule } from './session.ts';
 import type { Change, Clock, Schedule } from './session.ts';
@@ -36,6 +40,8 @@ export interface SavedSeat {
   readonly rematch: boolean;
   /** Had a live connection when saved (the room server uses it to notice drops while asleep). */
   readonly connected?: boolean;
+  /** Left on purpose (bye). */
+  readonly quit?: boolean;
 }
 
 /** A room as saved after every change: localStorage (P2P host) or Durable Object storage. */
@@ -134,6 +140,7 @@ interface SeatDraft {
   name: string;
   connected: boolean;
   rematch: boolean;
+  quit: boolean;
 }
 
 function randomEpoch(): string {
@@ -165,7 +172,7 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
   const initialPeers = [...(options.peers ?? [])];
   const live = new Set(initialPeers.map(([, playerId]) => playerId));
 
-  let seats: SeatDraft[] = local === null ? [] : [{ id: local.id, name: local.name, connected: true, rematch: false }];
+  let seats: SeatDraft[] = local === null ? [] : [{ id: local.id, name: local.name, connected: true, rematch: false, quit: false }];
   /** Saved as connected, but no connection is left: settle() announces them. */
   let gone: Array<{ id: string; name: string }> = [];
   for (const s of saved?.seats ?? []) {
@@ -175,7 +182,7 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
     if (s.connected === true && !connected) gone.push({ id: s.id, name });
     // In the lobby nobody has a stake yet: free absent players' seats; they re-take them on hello.
     if (phase === 'lobby' && !connected && s.id !== hostId) continue;
-    seats.push({ id: s.id, name, connected, rematch: s.rematch === true });
+    seats.push({ id: s.id, name, connected, rematch: s.rematch === true, quit: !connected && s.quit === true });
   }
   for (const [peer, playerId] of initialPeers) if (seats.some((s) => s.id === playerId)) peers.set(peer, playerId);
 
@@ -211,7 +218,7 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
       hostId: hostId ?? '',
       maxPlayers,
       phase,
-      seats: seats.map(({ id, name, rematch, connected }) => ({ id, name, rematch, connected })),
+      seats: seats.map(({ id, name, rematch, connected, quit }) => ({ id, name, rematch, connected, quit })),
       game: driver.game,
     };
   }
@@ -267,7 +274,7 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
     if (seat === undefined) {
       const reserved = seatOf(hostId) === undefined && playerId !== hostId ? 1 : 0;
       if (seats.length + reserved >= maxPlayers) return deny(peer, 'full', playerId, name);
-      seat = { id: playerId, name, connected: true, rematch: false };
+      seat = { id: playerId, name, connected: true, rematch: false, quit: false };
       if (playerId === hostId) seats.unshift(seat);
       else seats.push(seat);
       change = { type: 'join', playerId, name };
@@ -276,13 +283,15 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
     }
     const unchanged = change === undefined && peers.get(peer) === playerId && seat.name === name;
     seat.connected = true;
+    seat.quit = false;
     seat.name = name;
     peers.set(peer, playerId);
     if (unchanged) send(peer, stateMessage('snapshot', [])); // a resync: just the snapshot
     else publish([], { snapshotFor: peer, change });
   }
 
-  function drop(peer: string): void {
+  /** A peer went away. quit: it said bye (left on purpose) rather than lost its connection. */
+  function drop(peer: string, quit = false): void {
     const playerId = peers.get(peer);
     if (playerId === undefined) return;
     peers.delete(peer);
@@ -290,8 +299,9 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
     const seat = seatOf(playerId);
     if (seat === undefined || playerId === local?.id) return;
     seat.connected = false;
+    seat.quit = quit;
     if (phase === 'lobby' && playerId !== hostId) seats = seats.filter((s) => s !== seat);
-    publish([], { change: { type: 'leave', playerId, name: seat.name } });
+    publish([], { change: { type: 'leave', playerId, name: seat.name, quit } });
   }
 
   function canStart(): boolean {
@@ -325,6 +335,7 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
       case 'claim': {
         const action = toAction(playerId, intent);
         if (phase !== 'playing' || action === null) return reject(replyTo, intent.type, 'notPlaying');
+        if (intent.type === 'call' && isPaused(info())) return reject(replyTo, 'call', 'paused');
         const step = driver.apply(action);
         if (step === null) return reject(replyTo, intent.type, 'notPlaying');
         if (step.events.length === 0 && step.result !== 'called') reject(replyTo, intent.type, step.result);
@@ -373,6 +384,10 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
         hello(peer, message.v, message.playerId, message.name);
         return true;
       }
+      if (message.t === 'bye') {
+        drop(peer, true);
+        return true;
+      }
       const playerId = peers.get(peer);
       if (playerId !== undefined) act(playerId, message.intent, peer);
       return true;
@@ -385,7 +400,7 @@ export function createRoomCore(options: RoomCoreOptions): RoomCore {
     settle() {
       const left = gone;
       gone = [];
-      for (const { id, name } of left) if (seatOf(id)?.connected !== true) publish([], { change: { type: 'leave', playerId: id, name } });
+      for (const { id, name } of left) if (seatOf(id)?.connected !== true) publish([], { change: { type: 'leave', playerId: id, name, quit: false } });
     },
     snapshotAll() {
       for (const peer of [...peers.keys()]) send(peer, stateMessage('snapshot', []));

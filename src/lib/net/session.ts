@@ -46,7 +46,9 @@ export type Change =
       /** false after a missed update: render the view without animating. */
       readonly contiguous: boolean;
     }
-  | { readonly type: 'join' | 'rejoin' | 'leave'; readonly playerId: string; readonly name: string }
+  | { readonly type: 'join' | 'rejoin'; readonly playerId: string; readonly name: string }
+  /** quit: they left on purpose (Leave), rather than lost their connection. */
+  | { readonly type: 'leave'; readonly playerId: string; readonly name: string; readonly quit: boolean }
   /** Host: a peer was turned away. Guest: we were (playerId is our own). */
   | { readonly type: 'denied'; readonly reason: DenyReason; readonly playerId: string; readonly name: string }
   | { readonly type: 'rejected'; readonly intent: IntentType; readonly reason: string }

@@ -1229,6 +1229,9 @@ html.trio-ui body {
 /* table */
 .board {
   position: relative;
+  /* Placed explicitly so .paused-tag can share its cell. */
+  grid-row: 2;
+  grid-column: 1;
   min-height: 0;
   border-radius: 18px;
   overflow: hidden;
@@ -1260,6 +1263,30 @@ html.trio-ui body {
 }
 .board.frozen {
   filter: brightness(0.55) saturate(0.7);
+}
+/* A player is away: the game is paused. Over the board, above the cards. */
+.paused-tag {
+  grid-row: 2;
+  grid-column: 1;
+  place-self: center;
+  z-index: 30;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px 12px;
+  border-radius: 12px;
+  background: var(--cream);
+  color: var(--ink-dark);
+  font: 400 36px/1 var(--font-px);
+  text-align: center;
+  box-shadow: 0 5px 0 var(--hard);
+  pointer-events: none;
+}
+.paused-tag small {
+  display: block;
+  margin-top: 6px;
+  font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .game.calling-me .board {
   border-color: var(--you);

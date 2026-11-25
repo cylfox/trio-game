@@ -277,7 +277,7 @@ describe('room protocol (host + guests over the in-memory hub)', () => {
       ['host', true],
       ['A', false],
     ]);
-    assert.deepEqual(hostLog.of('leave'), [{ type: 'leave', playerId: 'A', name: 'Ana' }]);
+    assert.deepEqual(hostLog.of('leave'), [{ type: 'leave', playerId: 'A', name: 'Ana', quit: false }]);
 
     const c = guest('C', 'peer-c');
     hub.flush();
@@ -292,6 +292,77 @@ describe('room protocol (host + guests over the in-memory hub)', () => {
     back.session.act({ type: 'call' });
     hub.flush();
     assert.equal(view(host).lock?.playerId, 'A', 'the rejoined player can play');
+  });
+
+  test('guests hear about other players joining, leaving and coming back (server rooms: all guests)', () => {
+    const { hub, host, guest } = setup({ maxPlayers: 3 });
+    const a = guest('A', 'peer-a', 'Ana');
+    hub.flush();
+    assert.deepEqual(a.log.of('join'), [], 'whoever is seated on arrival was already there');
+    const b = guest('B', 'peer-b', 'Bea');
+    hub.flush();
+    assert.deepEqual(a.log.of('join'), [{ type: 'join', playerId: 'B', name: 'Bea' }]);
+    assert.deepEqual(b.log.of('join'), []);
+
+    host.act({ type: 'start' });
+    hub.flush();
+    void b.transport.leave(); // mid-game: B's seat stays, disconnected
+    hub.flush();
+    assert.deepEqual(a.log.of('leave'), [{ type: 'leave', playerId: 'B', name: 'Bea', quit: false }]);
+    assert.equal(a.session.getState().room?.seats.find((s) => s.id === 'B')?.connected, false);
+
+    const back = guest('B', 'peer-b2', 'Bea');
+    hub.flush();
+    assert.deepEqual(a.log.of('rejoin'), [{ type: 'rejoin', playerId: 'B', name: 'Bea' }]);
+    assert.deepEqual(back.log.of('rejoin'), [], 'not about yourself');
+    assert.equal(a.log.of('leave').length, 1, 'no repeats on later updates');
+  });
+
+  test('a guest hears about a seat freed in the lobby as a leave', () => {
+    const { hub, guest } = setup({ maxPlayers: 3 });
+    const a = guest('A', 'peer-a', 'Ana');
+    const b = guest('B', 'peer-b', 'Bea');
+    hub.flush();
+    void b.transport.leave();
+    hub.flush();
+    assert.deepEqual(a.session.getState().room?.seats.map((s) => s.id), ['host', 'A']);
+    assert.deepEqual(a.log.of('leave'), [{ type: 'leave', playerId: 'B', name: 'Bea', quit: true }]);
+  });
+
+  test('leaving on purpose (bye) vs losing the connection; the game pauses while a player is away', async () => {
+    const { hub, host, hostLog, guest } = setup();
+    const a = guest('A', 'peer-a', 'Ana');
+    hub.flush();
+    host.act({ type: 'start' });
+    hub.flush();
+    const seatA = () => host.getState().room?.seats.find((s) => s.id === 'A');
+
+    void a.transport.leave(); // the connection drops: no bye
+    hub.flush();
+    assert.deepEqual(hostLog.of('leave').at(-1), { type: 'leave', playerId: 'A', name: 'Ana', quit: false });
+    assert.equal(seatA()?.quit, false);
+    host.act({ type: 'call' });
+    assert.equal(view(host).lock, null, 'paused: no calls while Ana is away');
+    assert.deepEqual(hostLog.of('rejected').at(-1), { type: 'rejected', intent: 'call', reason: 'paused' });
+
+    const a2 = guest('A', 'peer-a2', 'Ana');
+    hub.flush();
+    host.act({ type: 'call' });
+    assert.equal(view(host).lock?.playerId, 'host', 'back on');
+
+    await a2.session.leave(); // Leave: says bye, then disconnects
+    hub.flush();
+    assert.deepEqual(hostLog.of('leave').at(-1), { type: 'leave', playerId: 'A', name: 'Ana', quit: true });
+    assert.deepEqual([seatA()?.connected, seatA()?.quit], [false, true]);
+    host.act({ type: 'claim', cards: aSet(host) });
+    assert.equal(score(host, 'host'), 3, 'a call already running still resolves');
+    host.act({ type: 'call' });
+    assert.equal(view(host).lock, null, 'then paused again');
+
+    const a3 = guest('A', 'peer-a3', 'Ana'); // back through the link
+    hub.flush();
+    assert.equal(seatA()?.quit, false, 'quit clears on return');
+    assert.deepEqual(a3.session.getState().room, host.getState().room);
   });
 
   test('room full when the max is 2', () => {
@@ -578,6 +649,21 @@ describe('messages and storage', () => {
       intent: { type: 'claim', cards: [1, 2, 3] },
     });
     assert.equal(parseGuestMessage('hello'), null);
+    assert.deepEqual(parseGuestMessage({ t: 'bye', extra: 1 }), { t: 'bye' });
+    const state = (seat: Record<string, unknown>) => ({
+      t: 'state',
+      v: 1,
+      kind: 'update',
+      epoch: 'e',
+      seq: 1,
+      at: 0,
+      room: { code: 'K7QX', hostId: 'h', maxPlayers: 2, phase: 'lobby', seats: [{ id: 'h', name: 'H', connected: false, rematch: false, ...seat }] },
+      view: null,
+      events: [],
+    });
+    assert.notEqual(parseHostMessage(state({})), null, 'quit is optional (an older room server)');
+    assert.notEqual(parseHostMessage(state({ quit: true })), null);
+    assert.equal(parseHostMessage(state({ quit: 'yes' })), null);
     assert.equal(cleanName('x'.repeat(100)).length, 24);
     assert.equal(parseHostMessage({ t: 'state', v: 99 }), null);
   });

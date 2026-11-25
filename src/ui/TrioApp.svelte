@@ -113,11 +113,13 @@
         play('join');
         toast(t('toast.partnerBack', { name: nameOf(change.playerId, change.name) }), 'partner', 1500);
         return;
-      case 'leave':
+      case 'leave': {
+        const text = t(change.quit ? 'toast.partnerQuit' : 'toast.partnerLeft', { name: nameOf(change.playerId, change.name) });
         play('leave');
-        toast(t('toast.partnerLeft', { name: nameOf(change.playerId, change.name) }), 'bad', 1800);
-        announce(t('toast.partnerLeft', { name: nameOf(change.playerId, change.name) }));
+        toast(text, 'bad', 1800);
+        announce(text);
         return;
+      }
       case 'hostAway':
         play('leave');
         toast(viaServer ? t('log.serverAway') : t('log.hostAway'), 'bad', 1800);

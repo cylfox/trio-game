@@ -9,6 +9,7 @@
   import { play, tickFor } from '../lib/audio/index.ts';
   import { cardName, locale, t } from '../lib/i18n/locale.svelte.ts';
   import CallBar from './CallBar.svelte';
+  import GoneDialog from './GoneDialog.svelte';
   import Menu from './Menu.svelte';
   import PlayerPanel from './PlayerPanel.svelte';
   import RulesSheet from './RulesSheet.svelte';
@@ -24,6 +25,8 @@
 
   /** Keys that press TRIO!: T, and S as an alias. */
   const CALL_KEYS: ReadonlySet<string> = new Set(['t', 'T', 's', 'S']);
+  /** How long the other player has to be gone before the dialog says so (a blip doesn't count). */
+  const GONE_DELAY_MS = 3000;
 
   let gameEl: HTMLElement;
   let boardEl: HTMLElement;
@@ -44,7 +47,9 @@
   const view = $derived(ctl.view);
   const lock = $derived(view?.lock ?? null);
   const callingMe = $derived(lock !== null && lock.playerId === ctl.me);
-  const frozen = $derived(lock !== null && lock.playerId !== ctl.me);
+  /** Paused (a player is away): the table dims, unless I'm finishing my own call. */
+  const pausedTable = $derived(ctl.paused && !callingMe);
+  const frozen = $derived((lock !== null && lock.playerId !== ctl.me) || pausedTable);
   const deckLayers = $derived(ctl.deckCount <= 0 ? 0 : Math.min(5, Math.ceil(ctl.deckCount / 12)));
   const callMs = $derived(view?.config.callMs ?? null);
 
@@ -53,9 +58,28 @@
     if (ctl.isTrain) return { text: callMs ? t('chip.train', { n: Math.round(callMs / 1000) }) : t('chip.trainOff'), tone: 'offline' };
     if (snap.status === 'hostAway') return { text: ctl.net === 'server' ? t('chip.reconnectingServer') : t('chip.reconnecting'), tone: 'away' };
     const away = snap.room?.seats.find((s) => s.id !== ctl.me && !s.connected);
-    if (away) return { text: t('chip.peerAway', { name: ctl.nameOf(away.id) }), tone: 'away' };
+    if (away) return { text: t(away.quit ? 'chip.peerLeft' : 'chip.peerAway', { name: ctl.nameOf(away.id) }), tone: 'away' };
     const direct = ctl.net === 'p2p' && ROOM_SERVER !== null;
     return { text: t(direct ? 'chip.onlineDirect' : 'chip.online', { code: snap.code ?? '' }), tone: 'online' };
+  });
+
+  /** The other player's seat, while they are away from a game in progress. */
+  const goneSeat = $derived.by(() => {
+    const room = ctl.snap.room;
+    if (ctl.isTrain || room?.phase !== 'playing' || ctl.ended) return null;
+    return room.seats.find((s) => s.id !== ctl.me && !s.connected) ?? null;
+  });
+  const goneId = $derived(goneSeat?.id ?? null);
+  const goneQuit = $derived(goneSeat?.quit === true);
+  // The dialog opens at once when they left on purpose, after a grace period when they lost
+  // connection, and stays closed after "wait" until they come back (goneId changes) and go again.
+  let goneOpen = $state(false);
+  const goneShown = $derived(goneOpen && goneId !== null && !ctl.menuOpen && !rulesOpen);
+  $effect(() => {
+    goneOpen = false;
+    if (goneId === null) return;
+    const timer = setTimeout(() => (goneOpen = true), goneQuit ? 0 : GONE_DELAY_MS);
+    return () => clearTimeout(timer);
   });
 
   function openMenu(): void {
@@ -72,12 +96,13 @@
     if (e.key === 'Escape') {
       if (rulesOpen) rulesOpen = false;
       else if (ctl.menuOpen) closeMenu();
+      else if (goneShown) goneOpen = false;
       return;
     }
     const tag = (e.target as HTMLElement | null)?.tagName ?? '';
     // T calls TRIO!; S still works (the old SET! shortcut).
     if (CALL_KEYS.has(e.key) && tag !== 'INPUT' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat) {
-      if (!ctl.menuOpen && !rulesOpen) ctl.pressSet();
+      if (!ctl.menuOpen && !rulesOpen && !goneShown) ctl.pressSet();
     }
   }
 
@@ -184,6 +209,11 @@
     </header>
 
     <main class="board" class:frozen bind:this={boardEl} aria-label={t('aria.table')}></main>
+    {#if pausedTable}
+      <div class="paused-tag" role="status" {@attach enter('pop')}>
+        {t('game.paused')}{#if goneId !== null}<small>{t('game.pausedFor', { name: ctl.nameOf(goneId) })}</small>{/if}
+      </div>
+    {/if}
 
     <footer class="bar slab">
       <div class="deck" class:empty={ctl.deckCount <= 0} role="img" aria-label={t('game.deckAria', { count: ctl.deckCount })}>
@@ -222,5 +252,8 @@
   {/if}
   {#if rulesOpen}
     <RulesSheet onclose={() => (rulesOpen = false)} />
+  {/if}
+  {#if goneShown && goneId !== null}
+    <GoneDialog name={ctl.nameOf(goneId)} quit={goneQuit} onwait={() => (goneOpen = false)} {onleave} />
   {/if}
 </section>

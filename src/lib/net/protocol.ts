@@ -4,6 +4,9 @@
  *
  *   guest → host   hello { v, playerId, name }   on every new connection to a peer, and on resync
  *                  act   { intent }              call | claim | hint | dealMore | start | rematch
+ *                  bye   {}                      leaving on purpose (Leave), just before disconnecting;
+ *                                                the seat says quit, so the others hear "left" rather
+ *                                                than "lost connection"
  *   host → guest   state { v, kind, epoch, seq, at, room, view, events }
  *                        kind 'snapshot' answers a hello (join, rejoin, resync); 'update' follows
  *                        every change. view = publicView(state) (null in the lobby); events are the
@@ -11,6 +14,9 @@
  *                  deny  { reason, maxPlayers }      'full' | 'version' | 'duplicate' | 'notFound'
  *                  reject { intent, reason }         an intent that changed nothing, e.g. 'noCall'
  *                  closed {}                         the host left for good (server: the room expired)
+ *
+ * Pause: while a game is on and a seated player is not connected, nobody can call (reject 'paused');
+ * a call already running still resolves. Everyone sees it from the seats (isPaused).
  *
  * Ordering: seq is per room incarnation (epoch) and grows by one per broadcast change. Guests drop
  * any state whose (epoch, seq) is not newer than what they have. Every state message carries the
@@ -35,6 +41,8 @@ export interface Seat {
   readonly connected: boolean;
   /** Asked for a rematch (phase 'over'). */
   readonly rematch: boolean;
+  /** Not connected because they left on purpose (bye), not because the connection dropped. */
+  readonly quit?: boolean;
 }
 
 export interface RoomInfo {
@@ -57,9 +65,15 @@ export type Intent =
 
 export type IntentType = Intent['type'];
 
+/** A game is on and someone is not connected: no new calls until they are back. */
+export function isPaused(room: RoomInfo): boolean {
+  return room.phase === 'playing' && room.seats.some((s) => !s.connected);
+}
+
 export type GuestMessage =
   | { readonly t: 'hello'; readonly v: number; readonly playerId: string; readonly name: string }
-  | { readonly t: 'act'; readonly intent: Intent };
+  | { readonly t: 'act'; readonly intent: Intent }
+  | { readonly t: 'bye' };
 
 /** notFound: the room server has no such room (never created, or expired). */
 export type DenyReason = 'full' | 'version' | 'duplicate' | 'notFound';
@@ -132,11 +146,19 @@ export function parseGuestMessage(raw: unknown): GuestMessage | null {
     const intent = parseIntent(raw.intent);
     return intent === null ? null : { t: 'act', intent };
   }
+  if (raw.t === 'bye') return { t: 'bye' };
   return null;
 }
 
 function isSeat(raw: unknown): raw is Seat {
-  return isObj(raw) && isStr(raw.id, ID_MAX) && typeof raw.name === 'string' && typeof raw.connected === 'boolean' && typeof raw.rematch === 'boolean';
+  return (
+    isObj(raw) &&
+    isStr(raw.id, ID_MAX) &&
+    typeof raw.name === 'string' &&
+    typeof raw.connected === 'boolean' &&
+    typeof raw.rematch === 'boolean' &&
+    (raw.quit === undefined || typeof raw.quit === 'boolean')
+  );
 }
 
 function isRoom(raw: unknown): raw is RoomInfo {

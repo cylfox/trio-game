@@ -17,6 +17,7 @@ import { applyEvent, findSets, playerStats } from '../lib/engine/engine.ts';
 import type { CardId, GameEvent, Mode, PublicView } from '../lib/engine/engine.ts';
 import { play, soundForEvent } from '../lib/audio/index.ts';
 import { locale, t } from '../lib/i18n/locale.svelte.ts';
+import { isPaused } from '../lib/net/protocol.ts';
 import type { Change, RoomSession, SessionState } from '../lib/net/session.ts';
 import { announce, toast } from '../ui/toasts.svelte.ts';
 import { fmtSpotU } from './format.ts';
@@ -200,6 +201,13 @@ export class GameController {
   away(id: string): boolean {
     const seat = this.snap?.room?.seats.find((s) => s.id === id);
     return seat !== undefined && !seat.connected;
+  }
+
+  /** Versus: someone is not connected (me too, while reconnecting), so nobody can call. */
+  get paused(): boolean {
+    const snap = this.snap;
+    if (this.isTrain || !snap) return false;
+    return snap.status === 'hostAway' || (snap.room !== null && isPaused(snap.room));
   }
 
   // ── Wiring ───────────────────────────────────────────────────────────────────────────────
@@ -706,6 +714,12 @@ export class GameController {
       }
       return;
     }
+    if (this.paused) {
+      wiggle(this.refs.setBtn);
+      this.showTip(t('tip.paused'));
+      play('nudge');
+      return;
+    }
     if (this.callPending) return;
     if (this.isTrain) {
       if (this.clock.state !== 'run') {
@@ -732,7 +746,7 @@ export class GameController {
     if (lock === null) {
       wiggle(this.refs.setBtn);
       this.table?.nudge(v);
-      this.showTip(t('tip.callFirst'));
+      this.showTip(t(this.paused ? 'tip.paused' : 'tip.callFirst'));
       play('nudge');
       return;
     }

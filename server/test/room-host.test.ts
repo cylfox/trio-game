@@ -219,7 +219,7 @@ describe('room server (RoomHost over fake sockets, storage and alarms)', () => {
       hostId: 'ana',
       maxPlayers: 2,
       phase: 'lobby',
-      seats: [{ id: 'ana', name: 'Ana', connected: true, rematch: false }],
+      seats: [{ id: 'ana', name: 'Ana', connected: true, rematch: false, quit: false }],
     });
     assert.equal(ana.last().view, null);
 
@@ -324,7 +324,8 @@ describe('room server (RoomHost over fake sockets, storage and alarms)', () => {
     w.host.closed(ben); // the late close event changes nothing more
     assert.equal(ana.received.length, count);
     w.act(ana, { type: 'call' });
-    assert.equal(ana.view().lock?.playerId, 'ana', 'play goes on');
+    assert.equal(ana.view().lock, null, 'paused while Ben is away');
+    assert.deepEqual(ana.of('reject').at(-1), { t: 'reject', intent: 'call', reason: 'paused' });
   });
 
   test('a player who reconnects keeps the seat and score; a third player is denied (room full)', () => {

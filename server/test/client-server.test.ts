@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { findSets } from '../../src/lib/engine/engine.ts';
 import type { CardId, PublicView } from '../../src/lib/engine/engine.ts';
 import { createGuest } from '../../src/lib/net/guest.ts';
-import type { RoomSession } from '../../src/lib/net/session.ts';
+import type { Change, RoomSession } from '../../src/lib/net/session.ts';
 import { createWebSocketTransport } from '../../src/lib/net/ws-transport.ts';
 import type { SocketLike, WebSocketTransport } from '../../src/lib/net/ws-transport.ts';
 import { RoomHost } from '../src/room-host.ts';
@@ -81,9 +81,13 @@ function harness() {
     close(): void {
       const s = this.server;
       if (s === null || s.gone) return;
-      s.gone = true;
-      open.delete(s);
-      queue.push(() => host.closed(s));
+      // Like a real WebSocket: what was sent before close() (a bye) still arrives first.
+      queue.push(() => {
+        if (s.gone) return;
+        s.gone = true;
+        open.delete(s);
+        host.closed(s);
+      });
     }
   }
 
@@ -191,7 +195,7 @@ function inSync(a: RoomSession, b: RoomSession): void {
 }
 
 describe('clients and room server together (guest + WebSocket transport + RoomHost)', () => {
-  test('create, play, an alarm timeout, the creator vanishing and coming back to the same seat', async () => {
+  test('create, play, an alarm timeout, the creator leaving (game paused) and coming back to the same seat', async () => {
     const h = harness();
     h.host.create('K7QX', 'ana');
     const ana = h.player('ana', 'Ana');
@@ -208,20 +212,28 @@ describe('clients and room server together (guest + WebSocket transport + RoomHo
     h.flush();
     assert.equal(score(ana.session, 'ben'), 3);
 
-    // Ana calls, then her tab is killed: the server's alarm still expires her call.
+    // Ana calls, then leaves (Leave: she says bye): the server's alarm still expires her call.
+    const benHeard: Change[] = [];
+    ben.session.subscribe((_state, change) => benHeard.push(change));
     ana.session.act({ type: 'call' });
     h.flush();
     await ana.session.leave();
     h.flush();
-    assert.equal(ben.session.getState().room?.seats.find((s) => s.id === 'ana')?.connected, false);
+    const anaSeat = () => ben.session.getState().room?.seats.find((s) => s.id === 'ana');
+    assert.deepEqual([anaSeat()?.connected, anaSeat()?.quit], [false, true], 'left on purpose');
+    assert.deepEqual(
+      benHeard.filter((c) => c.type === 'leave'),
+      [{ type: 'leave', playerId: 'ana', name: 'Ana', quit: true }],
+    );
     h.advance(5000);
     assert.equal(view(ben.session).lock, null, 'expired by the alarm with the creator gone');
     assert.equal(score(ben.session, 'ana'), -1);
 
-    // The game goes on without her: Ben calls and lets it run out too.
+    // The game is paused without her: Ben can't call.
     ben.session.act({ type: 'call' });
-    h.advance(5000);
-    assert.equal(score(ben.session, 'ben'), 0, '3 − 3');
+    h.flush();
+    assert.equal(view(ben.session).lock, null, 'paused');
+    assert.deepEqual(benHeard.at(-1), { type: 'rejected', intent: 'call', reason: 'paused' });
 
     // A third player can't take her seat.
     const carl = h.player('carl');
@@ -235,7 +247,10 @@ describe('clients and room server together (guest + WebSocket transport + RoomHo
     h.flush();
     inSync(ana2.session, ben.session);
     assert.equal(score(ana2.session, 'ana'), -1);
-    assert.equal(ana2.session.getState().room?.seats.find((s) => s.id === 'ana')?.connected, true);
+    assert.deepEqual([anaSeat()?.connected, anaSeat()?.quit], [true, false]);
+    ben.session.act({ type: 'call' });
+    h.flush();
+    assert.equal(view(ana2.session).lock?.playerId, 'ben', 'back on: calls work again');
     ana2.session.act({ type: 'start' }); // host powers kept: a new game
     h.flush();
     assert.deepEqual(view(ben.session).players.map((p) => p.score), [0, 0]);
