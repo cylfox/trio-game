@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Results. Versus: ranking with scores counting up, sets and misses, rematch. Train: spot-time
+  // Results. Versus: ranking with scores counting up, trios and misses, rematch. Train: spot-time
   // stats, counts, personal bests and the per-call chart.
   import { onMount } from 'svelte';
   import type { GameController } from '../game/controller.svelte.ts';

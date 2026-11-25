@@ -1,5 +1,6 @@
 <script lang="ts">
-  // The hero SET! button: idle, calling (my countdown fills it), locked (someone else's call).
+  // The hero TRIO! button: idle, calling (my countdown fills it), locked (someone else's call).
+  // Keyboard: T (or S, the old shortcut), handled in Game.svelte.
   import type { GameController } from '../game/controller.svelte.ts';
   import { t } from '../lib/i18n/locale.svelte.ts';
   import { ref } from './attach.ts';
@@ -35,6 +36,7 @@
   type="button"
   disabled={ctl.ended}
   aria-label={mine ? t('game.pick3Aria') : theirs ? t('game.lockedAria') : t('game.callSet')}
+  aria-keyshortcuts="T S"
   onpointerdown={down}
   onclick={click}
   {@attach ref((el) => (ctl.refs.setBtn = el))}

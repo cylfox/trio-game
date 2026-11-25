@@ -7,7 +7,7 @@
  * All positions are relative to the game element.
  */
 import type { CardId } from '../lib/engine/engine.ts';
-import { BACK_HTML, symPx, symbolsHtml } from './card-html.ts';
+import { cardHtml, symPx } from './card-html.ts';
 import { CARD_RATIO, computeLayout } from './layout.ts';
 import type { Layout, Rect } from './layout.ts';
 import { EASE, S, T, anim, rand, reducedMotion, wait } from './motion.ts';
@@ -82,7 +82,7 @@ export class CardView {
     el.style.setProperty('--sd', `${rand(2.4, 4.2).toFixed(2)}s`);
     el.style.setProperty('--sdl', `${(-rand(0, 4)).toFixed(2)}s`);
     el.style.setProperty('--sa', `${rand(0.5, 1.4).toFixed(2)}deg`);
-    el.innerHTML = `<div class="w c-sway"><div class="w c-fx"><div class="w c-lift"><div class="w c-flip${faceUp ? '' : ' down'}"><div class="cface">${symbolsHtml(id)}</div><div class="cback">${BACK_HTML}</div></div></div></div></div>`;
+    el.innerHTML = cardHtml(id, faceUp);
     this.el = el;
     this.fx = el.querySelector('.c-fx') as HTMLElement;
     this.flipEl = el.querySelector('.c-flip') as HTMLElement;

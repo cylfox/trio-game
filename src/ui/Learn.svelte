@@ -1,5 +1,5 @@
 <script lang="ts">
-  // "What's a set?": the rule, the three fixed examples and a random one.
+  // "What's a trio?": the rule, the three fixed examples and a random one.
   import { EXAMPLES, randomExample } from '../game/examples.ts';
   import { ROLL_KF, T, anim } from '../game/motion.ts';
   import { play } from '../lib/audio/index.ts';

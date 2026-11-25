@@ -2,7 +2,7 @@
   "name": "trio-game",
   "private": true,
   "version": "0.1.0",
-  "description": "Trio: a phone-first, 2-player online card game of spotting sets. Static site plus a small Cloudflare room server.",
+  "description": "Trio: a phone-first, 2-player online card game of spotting trios. Static site plus a small Cloudflare room server.",
   "type": "module",
   "engines": {
     "node": ">=24"

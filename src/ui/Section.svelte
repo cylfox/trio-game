@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A collapsible slab with a big title (the lobby's "What's a set?" and "How to play").
+  // A collapsible slab with a big title (the lobby's "What's a trio?" and "How to play").
   import type { Snippet } from 'svelte';
   import { play } from '../lib/audio/index.ts';
   import PixelIcon from './PixelIcon.svelte';

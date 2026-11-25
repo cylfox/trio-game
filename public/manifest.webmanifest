@@ -2,7 +2,7 @@
   "id": "/trio-game/",
   "name": "Trio",
   "short_name": "Trio",
-  "description": "A quick 2-player card game of spotting sets. Play a friend online or train solo.",
+  "description": "A quick 2-player card game of spotting trios. Play a friend online or train solo.",
   "start_url": "/trio-game/",
   "scope": "/trio-game/",
   "display": "standalone",

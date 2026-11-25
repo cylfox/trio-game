@@ -1,5 +1,5 @@
 <script lang="ts">
-  // One "What's a set?" example: three cards, the verdict and a chip per feature.
+  // One "What's a trio?" example: three cards, the verdict and a chip per feature.
   import { judge } from '../game/examples.ts';
   import type { Trio } from '../game/examples.ts';
   import { cardName, t } from '../lib/i18n/locale.svelte.ts';

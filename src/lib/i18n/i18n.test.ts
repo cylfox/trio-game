@@ -17,8 +17,8 @@ describe('i18n', () => {
   });
 
   test('interpolation fills names and formats numbers per language', () => {
-    assert.equal(translate('en', 'game.theirCall', { name: 'Ana' }), 'Ana called SET!');
-    assert.equal(translate('es', 'game.theirCall', { name: 'Ana' }), 'Ana ha cantado ¡SET!');
+    assert.equal(translate('en', 'game.theirCall', { name: 'Ana' }), 'Ana called TRIO!');
+    assert.equal(translate('es', 'game.theirCall', { name: 'Ana' }), 'Ana ha cantado ¡TRÍO!');
     assert.equal(translate('en', 'room.title', { code: 'K7QX' }), 'Room K7QX');
     assert.equal(interpolate('en', '{n} pts', { n: 12345.5 }), '12,345.5 pts');
     assert.equal(interpolate('es', '{n} ptos', { n: 12345.5 }), '12.345,5 ptos');
@@ -33,7 +33,11 @@ describe('i18n', () => {
     assert.equal(translate('es', 'game.deck', { count: 3 }), 'Quedan 3 cartas');
     assert.equal(translate('es', 'score.points', { count: -2 }), '-2 puntos');
     assert.equal(translate('en', 'score.points', { count: 1 }), '1 point');
-    assert.equal(translate('en', 'stats.sets'), '{count} sets', 'no count: the other form');
+    assert.equal(translate('en', 'stats.sets'), '{count} trios', 'no count: the other form');
+    assert.equal(translate('es', 'res.sets', { count: 1 }), '1 trío');
+    assert.equal(translate('es', 'res.sets', { count: 4 }), '4 tríos');
+    assert.equal(translate('en', 'res.hinted', { count: 1 }), '1 with a hint');
+    assert.equal(translate('es', 'res.hinted', { count: 2 }), '2 con pistas');
   });
 
   test('times use the language’s decimal separator', () => {

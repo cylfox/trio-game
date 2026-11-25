@@ -244,19 +244,6 @@ html.trio-ui body {
   padding: 0;
   flex: none;
 }
-.btn small {
-  display: block;
-  font: 400 15px/1.1 var(--font-caps);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  opacity: 0.85;
-  margin-top: 3px;
-}
-.btn .stack {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 .linkbtn {
   background: none;
   border: 0;
@@ -267,6 +254,22 @@ html.trio-ui body {
   letter-spacing: 0.04em;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* ---------- static cards (lobby logo, examples, rules, pile minis) ----------
+   The board's card markup (cardHtml) at rest, scaled by its font-size. Defined before the lobby
+   and pile rules so their positioning wins over these defaults. */
+.card.still {
+  position: relative;
+  left: auto;
+  top: auto;
+  display: block;
+  flex: none;
+  z-index: auto;
+  will-change: auto;
+}
+.card.still .c-sway {
+  animation: none;
 }
 
 /* ---------- lobby ---------- */
@@ -313,16 +316,15 @@ html.trio-ui body {
     transform: translateY(-7px) rotate(3deg);
   }
 }
+/* height: set inline from the card size */
 .logo-cards {
   position: relative;
-  height: 84px;
   margin-top: 8px;
 }
 .logo-cards .logo-card {
   position: absolute;
   left: 50%;
   top: 2px;
-  font-size: 50px;
   transform: translateX(-50%) translateX(var(--dx)) rotate(var(--r));
   animation: logoCard 3s ease-in-out infinite;
   animation-delay: calc(var(--i) * -1s);
@@ -336,18 +338,95 @@ html.trio-ui body {
     translate: 0 -5px;
   }
 }
+/* Two balanced, centred lines in both languages (the max-width forces the wrap). */
 .tagline {
-  margin-top: 6px;
-  font: 400 16px/1.3 var(--font-caps);
+  max-width: 17em;
+  margin: 8px auto 0;
+  font: 400 18px/1.2 var(--font-caps);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--ink-dim);
+  text-wrap: balance;
+  color: var(--ink);
+  text-shadow: 0 2px 0 var(--ink-dark);
 }
-.lobby-card {
+/* Your name: one compact row (label, field) */
+.name-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+.name-card .field-label {
+  flex: none;
+  margin: 0;
+}
+.name-card .field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The two ways to play: a block each, with its own accent, icon, header and line of copy.
+   "Play with a friend" is primary (gold, glowing edge); "Train solo" is secondary (cyan, quieter). */
+.mode {
+  --mc: var(--you);
+  --mc-ledge: var(--you-ledge);
   padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+.mode-online {
+  border-color: var(--you);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--you) 11%, var(--slab-2)), var(--slab) 70%);
+  box-shadow:
+    0 6px 0 var(--hard),
+    inset 0 2px 0 var(--slab-hi),
+    0 0 26px -8px var(--you-glow);
+}
+.mode-train {
+  --mc: var(--partner);
+  --mc-ledge: var(--partner-ledge);
+  border-color: var(--partner-ledge);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--partner) 7%, var(--slab-2)), var(--slab) 70%);
+}
+.mode-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mode-icon {
+  flex: none;
+  width: 48px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--mc);
+  color: var(--ink-dark);
+  font-size: 30px;
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    0 4px 0 var(--mc-ledge),
+    0 6px 0 var(--hard);
+}
+.mode-txt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mode-title {
+  font: 400 30px/0.95 var(--font-px);
+  color: var(--mc);
+  text-shadow: 0 3px 0 var(--ink-dark);
+}
+.mode-sub {
+  font: 400 15px/1.15 var(--font-caps);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-wrap: balance;
+  color: var(--ink-dim);
 }
 .field-label {
   display: block;
@@ -385,23 +464,6 @@ html.trio-ui body {
   letter-spacing: 0.03em;
   color: var(--bad);
 }
-.or {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font: 400 15px/1 var(--font-caps);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ink-faint);
-}
-.or::before,
-.or::after {
-  content: '';
-  flex: 1;
-  height: 3px;
-  background: var(--slab-edge);
-  border-radius: 2px;
-}
 .join-row {
   display: flex;
   gap: 8px;
@@ -419,12 +481,7 @@ html.trio-ui body {
 .join-row .btn {
   flex: none;
 }
-/* Train countdown picker, under the Train button */
-.train-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+/* Train countdown picker, in the Train solo block */
 .tc-row {
   display: flex;
   align-items: center;
@@ -617,7 +674,7 @@ html.trio-ui body {
   flex: 1 1 0;
 }
 
-/* "What's a set?" explainer, below the lobby buttons */
+/* "What's a trio?" explainer, below the lobby blocks */
 .learn {
   padding: 14px;
   display: flex;
@@ -684,7 +741,6 @@ html.trio-ui body {
 }
 .ex-card {
   flex: none;
-  font-size: 54px;
 }
 .ex-card:first-child {
   transform: rotate(-3deg);
@@ -692,7 +748,7 @@ html.trio-ui body {
 .ex-card:last-child {
   transform: rotate(3deg);
 }
-.ex-card.odd {
+.ex-card.odd .cface {
   box-shadow:
     inset 0 0 0 0.02em var(--cream-edge),
     0 0 0 0.055em var(--bad),
@@ -865,7 +921,7 @@ html.trio-ui body {
   letter-spacing: 0.04em;
   color: var(--ink-faint);
 }
-/* Train HUD: the hero spot timer, a 2-column stat sheet, the set pile */
+/* Train HUD: the hero spot timer, a 2-column stat sheet, the trio pile */
 .pp-train {
   gap: 8px;
   padding: 5px 6px 5px 11px;
@@ -1125,9 +1181,17 @@ html.trio-ui body {
   color: var(--cc);
   text-shadow: 0 4px 0 var(--ink-dark);
 }
+/* The countdown: whole 12 px segments (10 px lit, 2 px seam), anchored left and never scaled.
+   CallBar sizes the track to a whole number of segments and the fill to the lit ones. */
+.cb-rail {
+  display: flex;
+  justify-content: center;
+}
 .cb-track {
+  flex: none;
+  width: 100%;
   height: 12px;
-  border-radius: 6px;
+  border-radius: 4px;
   background: var(--well);
   border: 2px solid var(--ink-dark);
   overflow: hidden;
@@ -1135,7 +1199,9 @@ html.trio-ui body {
 .cb-fill {
   height: 100%;
   background: repeating-linear-gradient(90deg, var(--cc) 0 10px, color-mix(in srgb, var(--cc) 75%, #000) 10px 12px);
-  transform-origin: left center;
+}
+.cb-track:not(.measured) .cb-fill {
+  visibility: hidden;
 }
 .callbar.nolimit .cb-fill {
   opacity: 0.4;
@@ -1342,7 +1408,7 @@ html.trio-ui body {
   background: currentColor;
 }
 
-/* the hero SET! button */
+/* the hero TRIO! button */
 .setbtn {
   position: relative;
   overflow: hidden;
@@ -1822,7 +1888,7 @@ html.trio-ui body {
   font: 400 20px/1.2 var(--font-px);
   color: var(--ink-dim);
 }
-/* rules sheet: the "What's a set?" section in a scrollable modal */
+/* rules sheet: the "What's a trio?" section in a scrollable modal */
 .modal.rules {
   align-items: stretch;
   padding-block: 8px;
@@ -2135,11 +2201,12 @@ html.trio-ui body {
   background: repeating-linear-gradient(135deg, var(--bad) 0 2px, var(--bad-ledge) 2px 4px);
 }
 
-/* language switch (lobby + menu) */
+/* top bar (lobby + menu): [Ko-fi][GitHub] … [sound][globe EN] */
 .lang {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
 }
 .lang .btn {
   min-height: 34px;
@@ -2149,6 +2216,91 @@ html.trio-ui body {
 }
 .modal-card .lang {
   justify-content: center;
+}
+.top-links {
+  display: flex;
+  gap: 8px;
+  margin-right: auto;
+}
+/* icon-only links: small squares */
+.lang .top-link {
+  min-width: 42px;
+  width: 42px;
+  padding: 0 0 2px;
+  font-size: 20px;
+  text-decoration: none;
+}
+.top-link:focus-visible,
+.lang-btn:focus-visible,
+.lang-opt:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.top-link .gh-mark {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+/* Ko-fi: a warm accent, quieter than the main buttons (as in the footer) */
+.top-link.kofi {
+  --c: var(--slab-2);
+  --l: var(--you-dim);
+  --t: var(--you);
+  border: 2px solid var(--you-dim);
+}
+/* language menu: the button, and the small list it opens */
+.lang-menu {
+  position: relative;
+}
+.lang .lang-btn {
+  gap: 6px;
+  padding-inline: 9px 11px;
+}
+.lang-globe {
+  display: inline-flex;
+  font-size: 22px;
+}
+.lang-pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  z-index: 60;
+  min-width: 156px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 12px;
+}
+.lang-pop.up {
+  top: auto;
+  bottom: calc(100% + 12px);
+}
+.modal-card .lang-pop {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.lang-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 42px;
+  padding: 4px 10px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font: 400 25px/1 var(--font-px);
+  text-align: left;
+}
+.lang-opt:hover,
+.lang-opt:focus-visible {
+  background: var(--slate);
+}
+.lang-opt[aria-selected='true'] {
+  color: var(--you);
 }
 .res-actions {
   display: flex;
@@ -2168,7 +2320,7 @@ html.trio-ui body {
   height: 8px;
 }
 
-/* ---------- short phones (360×640): Train, Create and Join all fit without scrolling ---------- */
+/* ---------- short phones (360×640): Create room and Join fit without scrolling; Train peeks ---------- */
 @media (max-height: 700px) {
   .lobby {
     gap: 10px;
@@ -2181,35 +2333,35 @@ html.trio-ui body {
     font-size: 70px;
   }
   .logo-cards {
-    height: 50px;
     margin-top: 4px;
   }
-  .logo-cards .logo-card {
-    font-size: 30px;
-  }
   .tagline {
-    margin-top: 2px;
-    font-size: 15px;
+    margin-top: 4px;
+    font-size: 16px;
   }
-  .lobby-card {
+  .name-card {
+    padding-block: 8px;
+  }
+  .mode {
     padding: 12px;
     gap: 9px;
   }
-  .lobby-card .field {
+  .mode-icon {
+    width: 44px;
+    height: 40px;
+  }
+  .mode-title {
+    font-size: 28px;
+  }
+  :is(.name-card, .mode) .field {
     min-height: 42px;
     padding-block: 5px;
   }
-  .lobby-card .field-label {
+  .mode form .field-label {
     margin-bottom: 4px;
   }
-  .train-group {
-    gap: 9px;
-  }
-  .lobby-card .btn-big {
+  .mode .btn-big {
     min-height: 50px;
-  }
-  .lobby-card .btn-big small {
-    margin-top: 1px;
   }
   .room {
     gap: 9px;

@@ -1,6 +1,6 @@
 <script lang="ts">
   // The game screen: player panels (or the Train HUD) with the call banner, the table with its
-  // card layer, and the bottom bar (deck, SET!, hint, status chip, menu).
+  // card layer, and the bottom bar (deck, TRIO!, hint, status chip, menu).
   import { onMount } from 'svelte';
   import type { GameController } from '../game/controller.svelte.ts';
   import { BACK_HTML } from '../game/card-html.ts';
@@ -21,6 +21,9 @@
   import { ROOM_SERVER } from '../lib/net/config.ts';
 
   let { ctl, onleave }: { ctl: GameController; onleave: () => void } = $props();
+
+  /** Keys that press TRIO!: T, and S as an alias. */
+  const CALL_KEYS: ReadonlySet<string> = new Set(['t', 'T', 's', 'S']);
 
   let gameEl: HTMLElement;
   let boardEl: HTMLElement;
@@ -72,7 +75,8 @@
       return;
     }
     const tag = (e.target as HTMLElement | null)?.tagName ?? '';
-    if ((e.key === 's' || e.key === 'S') && tag !== 'INPUT' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat) {
+    // T calls TRIO!; S still works (the old SET! shortcut).
+    if (CALL_KEYS.has(e.key) && tag !== 'INPUT' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat) {
       if (!ctl.menuOpen && !rulesOpen) ctl.pressSet();
     }
   }

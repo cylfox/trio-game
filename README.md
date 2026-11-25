@@ -1,23 +1,23 @@
 # Trio
 
-A pixel-art card game about spotting sets, made for phones. Play head to head with a friend online, or train on your own and watch your reaction time drop.
+A pixel-art card game about spotting trios, made for phones. Play head to head with a friend online, or train on your own and watch your reaction time drop.
 
 **▶ Play: <https://cylfox.github.io/trio-game/>**
 
 It's a static site on GitHub Pages plus one small room server on Cloudflare's free plan: no accounts, no ads.
 
 <p>
-  <img src="docs/screenshots/lobby.png" width="200" alt="Lobby with Train, Create room and Join with code">
-  <img src="docs/screenshots/game.png" width="200" alt="A board of twelve pixel-art cards with the SET! button">
-  <img src="docs/screenshots/called.png" width="200" alt="The board locked while the other player has called SET!">
+  <img src="docs/screenshots/lobby.png" width="200" alt="Lobby with Play with a friend (Create room, Join with code) and Train solo">
+  <img src="docs/screenshots/game.png" width="200" alt="A board of twelve pixel-art cards with the TRIO! button">
+  <img src="docs/screenshots/called.png" width="200" alt="The board locked while the other player has called TRIO!">
   <img src="docs/screenshots/train-results-es.png" width="200" alt="Train results in Spanish with a spot-time chart and a new record">
 </p>
 
 ## Features
 
-- **Versus, online.** Two phones, one shared board. Press **SET!** to take the call: the other phone freezes while you pick your three cards against the clock.
-- **Train, solo.** The same call flow with no opponent. A live spot timer measures how fast you find each set, and the results chart shows every attempt.
-- **A deck you can watch.** Cards fly from the deck face down, flip, sway on the table and fly to whoever found the set.
+- **Versus, online.** Two phones, one shared board. Press **TRIO!** to take the call: the other phone freezes while you pick your three cards against the clock.
+- **Train, solo.** The same call flow with no opponent. A live spot timer measures how fast you find each trio, and the results chart shows every attempt.
+- **A deck you can watch.** Cards fly from the deck face down, flip, sway on the table and fly to whoever found the trio.
 - **Pixel art everywhere.** Hand-drawn card symbols redrawn on a 26×13 grid, the Jersey 10 pixel font, and a dark Balatro-inspired table.
 - **Sound.** Synthesised chiptune effects for every action, with an on/off switch.
 - **English and Spanish.** It follows your phone's language, and you can switch in the app.
@@ -25,33 +25,33 @@ It's a static site on GitHub Pages plus one small room server on Cloudflare's fr
 
 ## How to play
 
-### What's a set?
+### What's a trio?
 
 There are 81 cards. Each card has four features: **shape** (diamond, squiggle, oval), **colour** (red, green, purple), **number** (1, 2, 3) and **shading** (solid, striped, open).
 
-Three cards make a **set** when, for each feature on its own, the three cards are **all the same or all different**. If two cards match on a feature and the third doesn't, it's not a set.
+Three cards make a **trio** when, for each feature on its own, the three cards are **all the same or all different**. If two cards match on a feature and the third doesn't, it's not a trio.
 
 The lobby has worked examples and a "Show another" button for practice.
 
 ### Versus
 
 1. One player taps **Create room** and shares the 4-letter code or invite link. The other taps **Join with code** or opens the link.
-2. Twelve cards are dealt. When you spot a set, press **SET!**. The board freezes for your opponent, and you have 5 seconds to tap your three cards.
+2. Twelve cards are dealt. When you spot a trio, press **TRIO!** (or **T** on a keyboard). The board freezes for your opponent, and you have 5 seconds to tap your three cards.
 3. Scoring:
-   - A right set scores **+3**.
-   - A wrong set, or running out of time, costs **3** if you have at least 3 points, otherwise **1**.
+   - A right trio scores **+3**.
+   - A wrong trio, or running out of time, costs **3** if you have at least 3 points, otherwise **1**.
    - Scores can go negative.
-4. If there's no set on the table, three more cards are dealt automatically.
-5. The game ends when the deck is empty and no set is left. The highest score wins.
+4. If there's no trio on the table, three more cards are dealt automatically.
+5. The game ends when the deck is empty and no trio is left. The highest score wins.
 
 ### Train
 
-Train uses the same flow: press **SET!**, then pick. Nothing is scored, so you're racing yourself. Pick a countdown of 3, 5 or 8 seconds, or turn it off.
+Train uses the same flow: press **TRIO!**, then pick. Nothing is scored, so you're racing yourself. Pick a countdown of 3, 5 or 8 seconds, or turn it off.
 
-- **Spot time** runs from the moment the new cards are face up to your SET! press.
-- **Pick time** runs from SET! to your third card.
+- **Spot time** runs from the moment the new cards are face up to your TRIO! press.
+- **Pick time** runs from TRIO! to your third card.
 
-Wrong picks, timeouts and hint presses are all counted. Sets found with a hint don't count toward your records. Your personal bests are saved on your device.
+Wrong picks, timeouts and hint presses are all counted. Trios found with a hint don't count toward your records. Your personal bests are saved on your device.
 
 ## Playing with a friend
 

@@ -53,7 +53,7 @@ const ENTER = {
     ms: 260,
     easing: 'ease-out',
   },
-  /** The tip bubble over SET! (it is centred with translateX(-50%)). */
+  /** The tip bubble over TRIO! (it is centred with translateX(-50%)). */
   tip: {
     kf: [
       { transform: 'translateX(-50%) translateY(6px) scale(.7)', opacity: 0 },

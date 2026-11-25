@@ -1,7 +1,7 @@
 <script lang="ts">
   // "How to play": six short steps with small pixel illustrations.
   import { t } from '../lib/i18n/locale.svelte.ts';
-  import { BACK_HTML } from '../game/card-html.ts';
+  import CardFace from './CardFace.svelte';
   import PixelIcon from './PixelIcon.svelte';
   import Units from './Units.svelte';
 
@@ -23,8 +23,7 @@
           <span class="art chips"><span class="pchip ok">+3</span><span class="pchip bad">−3</span><span class="pchip bad">−1</span></span>
         {:else if n === 4}
           <span class="art backs" aria-hidden="true">
-            <!-- trusted markup: the card back -->
-            {#each [0, 1, 2] as k (k)}<span class="cback mini-back" style="--k:{k}">{@html BACK_HTML}</span>{/each}
+            {#each [0, 1, 2] as k (k)}<CardFace card={null} back width={20} fit={false} class="mini-back" style="--k:{k}" />{/each}
           </span>
         {:else if n === 5}
           <span class="art trophy"><PixelIcon name="trophy" size={0.9} /></span>
@@ -127,9 +126,8 @@
     position: relative;
     height: 30px;
   }
-  .mini-back {
-    position: relative;
-    font-size: 20px;
+  /* the board's card back (CardFace), small and fanned */
+  .backs :global(.mini-back) {
     margin-right: -10px;
     transform: rotate(calc((var(--k) - 1) * 8deg));
   }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // "Rules" from the game menu: How to play and What's a set?, as a sheet over the game.
+  // "Rules" from the game menu: How to play and What's a trio?, as a sheet over the game.
   import { play } from '../lib/audio/index.ts';
   import { t } from '../lib/i18n/locale.svelte.ts';
   import { enter } from './attach.ts';
