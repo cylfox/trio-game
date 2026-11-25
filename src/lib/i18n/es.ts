@@ -355,6 +355,7 @@ export const es: Messages = {
   'gh.label': 'GitHub',
   'gh.aria': 'Trio en GitHub (se abre en otra pestaña)',
   'gh.note': 'Código abierto · GPL-3.0',
+  'gh.by': 'por',
   'kofi.label': 'Apóyame en Ko-fi',
   'kofi.aria': 'Apoya Trio en Ko-fi (se abre en otra pestaña)',
 };

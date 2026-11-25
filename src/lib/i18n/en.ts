@@ -355,6 +355,7 @@ export const en = {
   'gh.label': 'GitHub',
   'gh.aria': 'Trio on GitHub (opens in a new tab)',
   'gh.note': 'Open source · GPL-3.0',
+  'gh.by': 'by',
   'kofi.label': 'Support on Ko-fi',
   'kofi.aria': 'Support Trio on Ko-fi (opens in a new tab)',
 } as const satisfies Record<string, Message>;

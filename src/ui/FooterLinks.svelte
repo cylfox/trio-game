@@ -19,7 +19,10 @@
       <span>{t('kofi.label')}</span>
     </a>
   </div>
-  {#if note}<p class="fineprint">{t('gh.note')}</p>{/if}
+  {#if note}
+    <p class="fineprint">{t('gh.note')}</p>
+    <p class="fineprint by">{t('gh.by')} <a href="https://www.cylfox.com" target="_blank" rel="noopener noreferrer">cylfox</a></p>
+  {/if}
 </div>
 
 <style>
@@ -49,6 +52,21 @@
     width: 18px;
     height: 18px;
     flex: none;
+  }
+  .by {
+    margin: 0;
+  }
+  .by a {
+    color: var(--you);
+    text-decoration: none;
+    border-bottom: 2px solid var(--you-dim);
+  }
+  .by a:hover {
+    border-bottom-color: var(--you);
+  }
+  .by a:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
   }
   /* A warm accent, quieter than the game's main buttons: a footer link, not a call to action. */
   .kofi {

@@ -148,3 +148,7 @@ Trio is free software under the [GNU General Public License v3.0 or later](LICEN
 - Peer-to-peer: [Trystero](https://github.com/dmotz/trystero) (MIT). UI: [Svelte](https://svelte.dev/) (MIT). Build: [Vite](https://vite.dev/) and [Tailwind CSS](https://tailwindcss.com/) (MIT). Room server: [Wrangler](https://github.com/cloudflare/workers-sdk) (MIT or Apache 2.0).
 
 Trio's matching rule comes from the card game SET®. Trio is an independent fan project. It isn't affiliated with or endorsed by the makers of SET.
+
+---
+
+By [cylfox](https://www.cylfox.com)
