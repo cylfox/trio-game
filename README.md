@@ -2,9 +2,9 @@
 
 A pixel-art card game about spotting trios, made for phones. Play head to head with a friend online, or train on your own and watch your reaction time drop.
 
-**▶ Play: <https://cylfox.github.io/trio-game/>**
+**▶ Play: <https://trio.cylfox.com>**
 
-It's a static site on GitHub Pages plus one small room server on Cloudflare's free plan: no accounts, no ads.
+It's a static site on Cloudflare Pages plus one small room server on Cloudflare's free plan: no accounts, no ads.
 
 <p>
   <img src="docs/screenshots/lobby.png" width="200" alt="Lobby with Play with a friend (Create room, Join with code) and Train solo">
@@ -71,7 +71,7 @@ The room server fits in Cloudflare's Workers Free plan, which needs SQLite-backe
 
 The repo is public, so anyone can find the server's address.
 
-- **Origins.** Only `https://cylfox.github.io` and local dev servers may create or join rooms (`ALLOWED_ORIGINS` in [`server/wrangler.jsonc`](server/wrangler.jsonc)). That stops other websites, but not scripts, which can send any origin.
+- **Origins.** Only `https://trio.cylfox.com` (and its `pages.dev` address) and local dev servers may create or join rooms (`ALLOWED_ORIGINS` in [`server/wrangler.jsonc`](server/wrangler.jsonc)). That stops other websites, but not scripts, which can send any origin.
 - **Rate limits per IP.** 10 rooms created and 30 joins (connections) a minute. Past that, the server answers `429` with `Retry-After`, and the client falls back to a direct connection. The count is kept in this Worker's memory first, then in one small Durable Object per hashed IP, so it holds across Cloudflare's machines.
 - **Per connection.** Messages over 4 KB or of the wrong shape are ignored. A flood (more than about 8 messages a second) or a run of bad messages closes the socket. A room holds at most 8 sockets and 2 players.
 - **No bill.** On the free plan, exhausting a quota only makes the server error until the next day; it can't produce a bill.
@@ -84,17 +84,17 @@ Requires Node 24 or newer.
 git clone https://github.com/cylfox/trio-game.git
 cd trio-game
 npm ci
-npm run dev         # http://localhost:5173/trio-game/
+npm run dev         # http://localhost:5173/
 npm run server:dev  # the room server on http://127.0.0.1:8787 (wrangler dev, no account needed)
 npm test            # engine, protocol, room server, UI logic, audio, i18n and symbol tests (node --test)
 npm run check       # svelte-check + tsc, strict, and the Worker's types
 npm run build       # production build into dist/
-npm run preview     # serve dist/ at /trio-game/
+npm run preview     # serve dist/ locally
 npm run symbols     # regenerate src/lib/symbol-data.ts from assets/pixel-symbols.json
 npm run icons       # regenerate the icons in public/ (dev only; the outputs are committed)
 ```
 
-To play against yourself on one computer, run `npm run server:dev` and `npm run dev`, then open `http://localhost:5173/trio-game/` and `http://127.0.0.1:5173/trio-game/`. They're different origins, so each gets its own player. Without `server:dev` running, rooms fall back to direct connections. Real phones need HTTPS, so test those on the Pages deployment.
+To play against yourself on one computer, run `npm run server:dev` and `npm run dev`, then open `http://localhost:5173/` and `http://127.0.0.1:5173/`. They're different origins, so each gets its own player. Without `server:dev` running, rooms fall back to direct connections. Real phones need HTTPS, so test those on the Pages deployment.
 
 ### Room server
 

@@ -2,9 +2,9 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 
-// Served from https://cylfox.github.io/trio-game/ (GitHub Pages project site).
+// Served from the site root: https://trio.cylfox.com (Cloudflare Pages project trio-game).
 export default defineConfig({
-  base: '/trio-game/',
+  base: '/',
   plugins: [tailwindcss(), svelte()],
   // Only index.html is an entry. Without this, Vite's dependency scan would also crawl the
   // Angular apps' HTML under legacy/.
